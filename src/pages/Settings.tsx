@@ -7,6 +7,7 @@ import { dayKey } from "../../shared/clock";
 import { download } from "./Progress";
 import { Disclaimer } from "./Today";
 import { ErrorNote } from "../components/Bits";
+import { STANDALONE } from "../lib/platform";
 
 export function Settings() {
   const s = useLearner();
@@ -57,7 +58,7 @@ export function Settings() {
         </div>
       </section>
 
-      <AISettings />
+      {STANDALONE ? <HostedAI /> : <AISettings />}
 
       <section className="card stack" id="clock" aria-labelledby="clock-h">
         <h2 id="clock-h">Simulated clock (testing)</h2>
@@ -83,6 +84,22 @@ export function Settings() {
         <p className="small">All patients are synthetic simulations. Content labeled "AI draft, awaiting review" was drafted from cited sources and has not yet been checked by a clinician. <Link to="/admin">Review workspace</Link>.</p>
       </section>
     </div>
+  );
+}
+
+function HostedAI() {
+  const ai = useAIStatus();
+  return (
+    <section className="card stack" id="ai" aria-labelledby="ai-h">
+      <div className="row between">
+        <h2 id="ai-h" style={{ margin: 0 }}>AI features</h2>
+        <span className={`badge ${ai?.mode === "live" ? "green" : "gray"}`}>{ai?.mode === "live" ? "Available" : "Not available here"}</span>
+      </div>
+      <p className="small muted">
+        On this hosted page the AI tutor and natural patient phrasing use your own Claude account, with no API key. The first use asks your permission and draws on your Claude usage. Everything else (lessons, rule-based patients, grading, review) works without it.
+      </p>
+      <p className="small muted">API keys, model choice, and the review workspace are part of the self-hosted version of the app.</p>
+    </section>
   );
 }
 
@@ -251,29 +268,51 @@ function DataSettings() {
   const s = useLearner();
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const copyExport = async () => {
+    try {
+      await navigator.clipboard.writeText(exportState());
+      setMsg("Progress copied. Paste it into a file or note to keep a backup.");
+    } catch {
+      setMsg("Copying is blocked here. Use Export instead.");
+    }
+  };
   return (
     <section className="card stack" id="data" aria-labelledby="data-h">
       <h2 id="data-h">Your data</h2>
-      <p className="small muted">Progress is saved in this browser after every answer and synced to the app server. To continue on another device, enter this sync code there.</p>
+      {STANDALONE ? (
+        <p className="small muted">Progress saves after every answer, in this browser and to your Claude account, so it follows you to other devices where you open this page signed in.</p>
+      ) : (
+        <>
+          <p className="small muted">Progress is saved in this browser after every answer and synced to the app server. To continue on another device, enter this sync code there.</p>
+          <div className="row">
+            <span className="small">Sync code:</span>
+            <code className="mono small" style={{ wordBreak: "break-all" }}>{s.profileId}</code>
+            <button className="btn small" onClick={() => navigator.clipboard?.writeText(s.profileId)}>Copy</button>
+          </div>
+          <div className="tiny muted">{lastSync ? `Last server sync ${lastSync.ok ? "succeeded" : "failed (will retry)"} at ${new Date(lastSync.at).toLocaleTimeString()}.` : "Not synced yet this session."}</div>
+          <form className="row" onSubmit={async (e) => { e.preventDefault(); const ok = await pullFromServer(code.trim()); setMsg(ok ? "Progress loaded from the sync code." : "No progress found for that code."); }}>
+            <input className="input" style={{ flex: 1 }} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Enter a sync code from another device" aria-label="Sync code" />
+            <button className="btn" disabled={!code.trim()}>Load</button>
+          </form>
+        </>
+      )}
       <div className="row">
-        <span className="small">Sync code:</span>
-        <code className="mono small" style={{ wordBreak: "break-all" }}>{s.profileId}</code>
-        <button className="btn small" onClick={() => navigator.clipboard?.writeText(s.profileId)}>Copy</button>
-      </div>
-      <div className="tiny muted">{lastSync ? `Last server sync ${lastSync.ok ? "succeeded" : "failed (will retry)"} at ${new Date(lastSync.at).toLocaleTimeString()}.` : "Not synced yet this session."}</div>
-      <form className="row" onSubmit={async (e) => { e.preventDefault(); const ok = await pullFromServer(code.trim()); setMsg(ok ? "Progress loaded from the sync code." : "No progress found for that code."); }}>
-        <input className="input" style={{ flex: 1 }} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Enter a sync code from another device" aria-label="Sync code" />
-        <button className="btn" disabled={!code.trim()}>Load</button>
-      </form>
-      <div className="row">
-        <button className="btn" onClick={() => download(`neuro-tutor-progress-${dayKey(Date.now())}.json`, exportState())}>Export</button>
+        <button className="btn" onClick={async () => setMsg(await download(`neuro-tutor-progress-${dayKey(Date.now())}.json`, exportState()))}>Export</button>
+        <button className="btn" onClick={copyExport}>Copy</button>
         <label className="btn">
           Import
           <input type="file" accept="application/json" className="sr-only" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setMsg(importState(await f.text()) ? "Progress imported." : "That file is not a valid progress export."); }} />
         </label>
-        <button className="btn ghost" onClick={() => { if (confirm("Erase all progress in this browser? Export first if you want a copy.")) resetState(); }}>
-          Reset progress
-        </button>
+        {!confirmReset ? (
+          <button className="btn ghost" onClick={() => setConfirmReset(true)}>Reset progress</button>
+        ) : (
+          <span className="row">
+            <span className="small">Erase all progress? Export first if you want a copy.</span>
+            <button className="btn small" onClick={() => { resetState(); setConfirmReset(false); setMsg("Progress erased."); }}>Erase</button>
+            <button className="btn small ghost" onClick={() => setConfirmReset(false)}>Cancel</button>
+          </span>
+        )}
       </div>
       {msg && <div className="notice small" role="status">{msg}</div>}
     </section>

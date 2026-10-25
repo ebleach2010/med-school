@@ -4,6 +4,21 @@ An adaptive web app for learning clinical neurology, from medical school foundat
 
 **Educational use only.** Completing it does not confer a degree, license, or qualification to practice, and its assessments do not establish clinical competence. Every patient is a synthetic simulation. All medical content is currently an AI draft awaiting clinician review, and the app labels it that way.
 
+## Use it on your phone
+
+A hosted copy runs as a web page on claude.ai: https://claude.ai/artifact/NRVkCcRk1ZoQ3XagpCGbRt (private to its owner until shared from the page's Share menu).
+
+- **iPhone or iPad (Safari):** open the link, tap Share, then **Add to Home Screen**.
+- **Android (Chrome):** open the link, tap the menu, then **Add to Home screen**.
+
+The hosted copy is the standalone build (`npm run build:standalone`). It runs without the app server:
+- The encounter engine runs in the browser, so case answer keys ship with the page instead of staying on a server.
+- Progress saves in the browser and to your Claude account, so it follows you across devices when you're signed in.
+- The AI tutor and natural patient phrasing use your own Claude account (no API key); the first use asks permission.
+- The review workspace and API-key settings need the self-hosted version.
+
+To self-host instead, `npm run build && npm start` serves the full app with a web app manifest and icons, so its URL can be added to a home screen as an app too.
+
 ## Quick start
 
 ```bash
@@ -73,6 +88,7 @@ The live provider paths have not yet been run against a real key. They are teste
 | `npm run typecheck` | TypeScript across client, server, content, and tests |
 | `npm run validate:content` | Cross-references, citations, answer-key self-consistency, case coherence, em dash check |
 | `npm run coverage` | Regenerate `docs/COVERAGE.md` |
+| `npm run build:standalone` | Build the serverless single-page version used for the hosted copy (`dist-standalone/neuro-tutor.html`) |
 | `npm run smoke` | Browser smoke test at phone width with keyboard checks (needs the app running on :8787) |
 
 ## Configuration

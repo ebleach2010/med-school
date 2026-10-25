@@ -296,3 +296,6 @@ table.data th { color: var(--text-2); font-weight: 600; }
 :root[data-motion="reduce"] * { transition: none !important; animation: none !important; }
 .option > span { min-width: 0; overflow-wrap: anywhere; }
 .grid > * { min-width: 0; }
+/* Hosted pages run edge to edge on phones: keep the sticky header below the status bar. */
+.topbar { top: env(safe-area-inset-top, 0px); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 25; background: var(--surface); }

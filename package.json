@@ -14,7 +14,8 @@
     "test": "vitest run",
     "validate:content": "tsx scripts/validate-content.ts",
     "smoke": "node scripts/smoke.mjs",
-    "coverage": "tsx scripts/coverage-report.ts"
+    "coverage": "tsx scripts/coverage-report.ts",
+    "build:standalone": "node scripts/build-standalone.mjs"
   },
   "engines": {
     "node": ">=22.13"

@@ -7,6 +7,7 @@ import { recordAttempt, setSelfReport, getState } from "../lib/store";
 import { Inline, RichText } from "./RichText";
 import { Schematic } from "./Schematic";
 import { ProvenanceLine } from "./Provenance";
+import { STANDALONE } from "../lib/platform";
 
 const REGION_GROUPS: { label: string; regions: NeuraxisRegion[] }[] = [
   { label: "Brain", regions: ["cortex-left", "cortex-right", "subcortical-left", "subcortical-right", "cerebellum"] },
@@ -129,7 +130,7 @@ export function ItemView({
     setListening(true);
     rec.start();
   };
-  const hasVoice = typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
+  const hasVoice = !STANDALONE && typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
   const verdictClass = result ? (result.grade.verdict === "correct" ? "good" : result.grade.verdict === "idk" ? "neutral" : result.grade.score > 0 ? "partial" : "bad") : "";
   const slipSuggested = result && result.grade.score < 0.8 && result.attempt.confidence !== "idk" ? suggestSlip(result.attempt, bySkill(getState().attempts.filter((a) => a.id !== result.attempt.id), now())[item.skill]) : false;

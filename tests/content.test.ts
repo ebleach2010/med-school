@@ -64,13 +64,15 @@ describe("evidence and copy rules", () => {
     files.push("index.html");
     for (const f of files) expect(fs.readFileSync(f, "utf8").includes("—"), f).toBe(false);
   });
-  it("client code never imports hidden case content", () => {
+  it("the server-backed client never imports hidden case content", () => {
     const offenders: string[] = [];
     const walk = (d: string) => {
       for (const f of fs.readdirSync(d)) {
         const p = path.join(d, f);
+        // The standalone build (no server) is the one exception: it runs the engine in the browser.
+        if (p.startsWith(path.join("src", "standalone")) || p === path.join("src", "main.standalone.tsx")) continue;
         if (fs.statSync(p).isDirectory()) walk(p);
-        else if (/from\s+["'][^"']*(content\/cases|server\/)/.test(fs.readFileSync(p, "utf8"))) offenders.push(p);
+        else if (/from\s+["'][^"']*(content\/cases|server\/|standalone)/.test(fs.readFileSync(p, "utf8"))) offenders.push(p);
       }
     };
     walk("src");

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { streamApi } from "../lib/api";
 import { useAIStatus } from "../lib/hooks";
+import { STANDALONE } from "../lib/platform";
 
 interface Msg {
   role: "user" | "assistant";
@@ -18,6 +19,9 @@ export function TutorChat({ kind, encounterId, lessonId, mode = "ask", starter }
   const [meta, setMeta] = useState<string | null>(null);
   const ctrl = useRef<AbortController | null>(null);
 
+  if (ai && ai.mode !== "live" && STANDALONE) {
+    return <div className="notice">The AI tutor runs on your Claude account when this page is open on claude.ai and you are signed in. Prewritten explanations, rule-based patients, and grading all work without it.</div>;
+  }
   if (ai && ai.mode !== "live") {
     return (
       <div className="notice">
@@ -83,7 +87,8 @@ export function TutorChat({ kind, encounterId, lessonId, mode = "ask", starter }
           </button>
         )}
       </form>
-      {meta && <div className="tiny muted">AI response: {meta}. AI explanations are not citations; check the listed sources.</div>}
+      {meta && <div className="tiny muted">{STANDALONE ? "Answered by Claude on your account." : `AI response: ${meta}.`} AI explanations are not citations; check the listed sources.</div>}
+      {STANDALONE && !msgs.length && <div className="tiny muted">The first question asks your permission to use Claude from this page. It uses your own Claude usage.</div>}
     </div>
   );
 }

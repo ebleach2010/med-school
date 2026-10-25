@@ -8,6 +8,7 @@ import { now, dayKey, DAY_MS } from "../../shared/clock";
 import { SKILLS, SKILL_LABELS, type Attempt } from "../../shared/types";
 import { Stars, StatusBadge, Bar } from "../components/Bits";
 import { stripMarkup } from "../../shared/text";
+import { STANDALONE, hostCapability, type DownloadsCap } from "../lib/platform";
 
 const ERROR_LABELS: Record<string, string> = {
   "knowledge-gap": "Knowledge gap",
@@ -24,13 +25,24 @@ function pct(n: number, d: number) {
   return d ? `${Math.round((n / d) * 100)}%` : "No data";
 }
 
-export function download(name: string, text: string) {
+export async function download(name: string, text: string): Promise<string | null> {
+  if (STANDALONE) {
+    const d = await hostCapability<DownloadsCap>("downloads");
+    if (!d) return "Saving files is not available here. Use Settings > Your data > Copy to copy the export instead.";
+    try {
+      await d.save({ filename: name, data: text });
+      return null;
+    } catch (e) {
+      return (e as { code?: string }).code === "declined" ? null : "The file could not be saved.";
+    }
+  }
   const blob = new Blob([text], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = name;
   a.click();
   URL.revokeObjectURL(a.href);
+  return null;
 }
 
 function itemLabel(a: Attempt): string {
@@ -222,7 +234,7 @@ export function Progress() {
       </div>
 
       <div className="row">
-        <button className="btn" onClick={() => download(`neuro-tutor-progress-${dayKey(Date.now())}.json`, exportState())}>
+        <button className="btn" onClick={() => void download(`neuro-tutor-progress-${dayKey(Date.now())}.json`, exportState())}>
           Export progress
         </button>
         <Link className="btn ghost" to="/settings#data">

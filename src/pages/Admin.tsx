@@ -6,6 +6,7 @@ import { useReviewOverrides, refreshReviews } from "../lib/hooks";
 import { effectiveReview, ReviewBadge } from "../components/Provenance";
 import { ErrorNote } from "../components/Bits";
 import { stripMarkup } from "../../shared/text";
+import { STANDALONE } from "../lib/platform";
 
 type Tab = "content" | "cases" | "proposals" | "draft";
 
@@ -44,6 +45,13 @@ export function Admin() {
       return "";
     }
   });
+  if (STANDALONE)
+    return (
+      <div className="stack">
+        <h1>Review workspace</h1>
+        <div className="notice">Content review, case preview, and update proposals need the self-hosted version of the app, which stores review records on its server.</div>
+      </div>
+    );
   return (
     <div className="stack">
       <h1>Review workspace</h1>

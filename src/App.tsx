@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { NavLink, Route, Routes, Link, useLocation } from "react-router-dom";
 import { useLearner, pullFromServer } from "./lib/store";
 import { useAIStatus } from "./lib/hooks";
+import { STANDALONE } from "./lib/platform";
 import { Today } from "./pages/Today";
 import { Placement } from "./pages/Placement";
 import { Learn } from "./pages/Learn";
@@ -42,13 +43,17 @@ export function App() {
   const loc = useLocation();
 
   useEffect(() => {
-    if (!s.attempts.length) void pullFromServer();
+    // The hosted build always checks the account copy, which may be newer than this device's.
+    if (STANDALONE || !s.attempts.length) void pullFromServer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const root = document.documentElement;
-    if (s.settings.theme === "system") root.removeAttribute("data-theme");
+    // On a hosted page the viewer sets data-theme itself; leave it alone unless the learner chose one.
+    if (s.settings.theme === "system") {
+      if (!STANDALONE) root.removeAttribute("data-theme");
+    }
     else root.setAttribute("data-theme", s.settings.theme);
     root.style.setProperty("--scale", String(s.settings.textScale));
     if (s.settings.reducedMotion === "on") root.setAttribute("data-motion", "reduce");
