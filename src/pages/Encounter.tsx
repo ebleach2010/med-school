@@ -11,9 +11,10 @@ import { Schematic } from "../components/Schematic";
 import { ReviewBadge } from "../components/Provenance";
 import { TutorChat } from "../components/TutorChat";
 import { Bar, ErrorNote } from "../components/Bits";
+import { FocusShell } from "../components/FocusShell";
+import { Sheet } from "../components/Sheet";
+import { Icon, Ring, type IconName } from "../components/Icon";
 import { gradeToAttempts } from "../lib/caseAttempts";
-
-type Tab = "patient" | "exam" | "orders" | "actions" | "ddx" | "submit";
 
 export function EventItem({ e }: { e: EncEvent }) {
   const cls = e.kind === "result" ? `result ${e.abnormal ? "abnormal" : ""}` : e.kind === "presentation" ? "result" : e.kind;
@@ -43,13 +44,33 @@ export function EventItem({ e }: { e: EncEvent }) {
   );
 }
 
+type Panel = "ask" | "exam" | "orders" | "actions" | "ddx" | "wait" | "submit";
+
+const DOCK: { k: Panel; label: string; icon: IconName }[] = [
+  { k: "ask", label: "Ask", icon: "chat" },
+  { k: "exam", label: "Examine", icon: "steth" },
+  { k: "orders", label: "Order", icon: "flask" },
+  { k: "actions", label: "Treat", icon: "pill" },
+  { k: "ddx", label: "Ddx", icon: "list" },
+];
+
+const PANEL_TITLES: Record<Panel, string> = {
+  ask: "Ask a question",
+  exam: "Examine",
+  orders: "Order tests",
+  actions: "Treat and manage",
+  ddx: "Your differential",
+  wait: "Let time pass",
+  submit: "Submit your assessment",
+};
+
 export function Encounter() {
   const { id } = useParams();
   const s = useLearner();
   const ai = useAIStatus();
   const [v, setV] = useState<EncounterView | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("patient");
+  const [panel, setPanel] = useState<Panel | null>(null);
   const [busy, setBusy] = useState(false);
   const [question, setQuestion] = useState("");
   const [useAI, setUseAI] = useState(false);
@@ -75,7 +96,7 @@ export function Encounter() {
 
   useEffect(() => {
     if (v && v.status !== "submitted") setResume(`/encounter/${v.id}`, `Encounter: ${v.case.label}`);
-    timelineEnd.current?.scrollIntoView({ block: "nearest" });
+    timelineEnd.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [v?.events.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Record graded dimensions as learner evidence exactly once.
@@ -87,12 +108,13 @@ export function Encounter() {
     update((x) => ({ ...x, resume: null, encounters: { ...x.encounters, [id]: { ...(x.encounters[id] ?? { caseLabel: v.case.label, mode: v.mode, startedAt: Date.now() }), submitted: true } } }));
   }, [v?.grade]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const call = async (path: string, json: unknown) => {
+  const call = async (path: string, json: unknown, closePanel = true) => {
     setBusy(true);
     setError(null);
     setNote(null);
     try {
       load(await api<EncounterView>(`/api/encounters/${id}/${path}`, { method: "POST", json }));
+      if (closePanel) setPanel(null);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -111,99 +133,143 @@ export function Encounter() {
   const ordered = new Set(v.events.filter((e) => e.kind === "order").map((e) => e.ref));
   const examined = new Set(v.events.filter((e) => e.kind === "exam").map((e) => e.ref));
   const examMinutes = examSel.reduce((t, mId) => t + (MANEUVERS.find((m) => m.id === mId)?.minutes ?? 1), 0);
+  const who = v.case.speaker === "family" ? "family member" : "patient";
 
-  return (
-    <div className="stack">
-      <div className="small">
-        <Link to="/cases">Cases</Link> / {v.case.label}
-      </div>
-      <div className="row between">
-        <h1 style={{ margin: 0 }}>{v.case.label}</h1>
-        <div className="row">
-          <ReviewBadge provenance={v.case.provenance} status={v.case.review} />
-          <span className="badge blue">{v.mode}</span>
+  const header = (
+    <div className="enc-head grow">
+      <div className="grow">
+        <div className="title">{v.case.label}</div>
+        <div className="sub" aria-live="polite">
+          <span className="mono">T+{v.simMinutes}m</span>
+          {v.pendingOrders.length > 0 && ` · ${v.pendingOrders.length} result${v.pendingOrders.length > 1 ? "s" : ""} pending`}
+          {` · ${v.mode}`}
         </div>
       </div>
-      <p className="small muted" style={{ margin: 0 }}>
-        {v.case.age}-year-old {v.case.sex}, {v.case.setting}. {v.case.speaker === "family" ? `History from family. ${v.case.speakerNote ?? ""}` : ""}
-      </p>
-      {v.case.adaptation && <p className="small">Adapted from {v.case.adaptation.source} ({v.case.adaptation.license}). Altered: {v.case.adaptation.altered.join("; ")}.</p>}
+      {active && (
+        <>
+          <button className="icon-btn" aria-label="Let time pass" onClick={() => setPanel("wait")}>
+            <Icon name="clock" />
+          </button>
+          <button className="btn green small" onClick={() => setPanel("submit")}>
+            Submit
+          </button>
+        </>
+      )}
+    </div>
+  );
 
-      <div className="card tight row between" aria-live="polite">
+  return (
+    <FocusShell closeTo="/cases" closeLabel="Leave encounter (progress is kept)" top={header}>
+      <div className="row small faint" style={{ gap: 6, marginBottom: 10 }}>
+        <ReviewBadge provenance={v.case.provenance} status={v.case.review} />
         <span>
-          <strong className="mono">T+{v.simMinutes} min</strong> <span className="small muted">simulated time</span>
-          {v.pendingOrders.length > 0 && <span className="badge amber" style={{ marginLeft: 8 }}>{v.pendingOrders.length} result{v.pendingOrders.length > 1 ? "s" : ""} pending</span>}
+          {v.case.age}-year-old {v.case.sex}, {v.case.setting}.
         </span>
-        {active && (
-          <span className="row">
-            <span className="tiny muted">Simulation fast-forward:</span>
-            {[5, 15, 60, 240].map((m) => (
-              <button key={m} className="btn small" disabled={busy} onClick={() => call("wait", { minutes: m })}>
-                +{m >= 60 ? `${m / 60}h` : `${m}m`}
-              </button>
-            ))}
-          </span>
-        )}
+        {v.case.speaker === "family" && <span>History from family. {v.case.speakerNote ?? ""}</span>}
       </div>
+      {v.case.adaptation && <p className="tiny faint">Adapted from {v.case.adaptation.source} ({v.case.adaptation.license}). Altered: {v.case.adaptation.altered.join("; ")}.</p>}
 
-      <div className="grid two" style={{ alignItems: "start" }}>
-        <section className="card" aria-label="Encounter timeline" style={{ maxHeight: "70vh", overflow: "auto" }}>
-          <div className="timeline">
-            {v.events.map((e, i) => (
-              <EventItem key={i} e={e} />
+      <section className="timeline" aria-label="Encounter timeline">
+        {v.events.map((e, i) => (
+          <EventItem key={i} e={e} />
+        ))}
+        <div ref={timelineEnd} style={{ scrollMarginBottom: active ? 170 : 20 }} />
+      </section>
+      <ErrorNote error={error} />
+      {note && <div className="notice" style={{ marginTop: 10 }}>{note}</div>}
+
+      {v.status === "interpreting" && v.interpretation && (
+        <div className="section">
+          <h2>Interpret the results</h2>
+          <p className="small muted">Your diagnosis is locked in. Some of these you may not have ordered.</p>
+          <div className="stack">
+            {v.interpretation.map((q) => (
+              <div key={q.id} className="card tight stack-sm">
+                <EventItem e={{ t: v.simMinutes, kind: "result", text: q.result.text, values: q.result.values, schematic: q.result.schematic, report: q.result.report }} />
+                {!q.orderedByLearner && <span className="tiny faint">Shown for interpretation practice; you did not order it.</span>}
+                <label className="field" htmlFor={`i-${q.id}`}>{q.question}</label>
+                <textarea id={`i-${q.id}`} className="input" value={interp[q.id] ?? ""} onChange={(e) => setInterp({ ...interp, [q.id]: e.target.value })} />
+              </div>
             ))}
-            <div ref={timelineEnd} />
           </div>
-        </section>
+          <button className="btn primary block lg" style={{ marginTop: 12 }} disabled={busy} onClick={() => call("interpret", { answers: interp })}>
+            Submit interpretation
+          </button>
+        </div>
+      )}
 
-        <section aria-label="Clinical controls">
-          {active && (
-            <div className="tabs" role="tablist">
-              {(
-                [
-                  ["patient", "History"],
-                  ["exam", "Exam"],
-                  ["orders", "Orders"],
-                  ["actions", "Actions"],
-                  ["ddx", "Differential"],
-                  ["submit", "Submit"],
-                ] as [Tab, string][]
-              ).map(([k, l]) => (
-                <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>
-                  {l}
+      {v.status === "submitted" && v.grade && (
+        <div className="section">
+          <Debrief v={v} />
+        </div>
+      )}
+
+      {active && (
+        <div className="dock">
+          <div className="dock-inner">
+            <form
+              className="ask-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (question.trim()) {
+                  void call("ask", { question, useAI });
+                  setQuestion("");
+                }
+              }}
+            >
+              <input className="input" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={`Ask the ${who}...`} aria-label={`Question for the ${who}`} maxLength={500} />
+              <button className="btn primary" disabled={busy || !question.trim()} aria-label="Send question">
+                <Icon name="send" />
+              </button>
+            </form>
+            <div className="dock-tabs" role="group" aria-label="Clinical tools">
+              {DOCK.map((d) => (
+                <button key={d.k} aria-pressed={panel === d.k} onClick={() => setPanel(d.k)}>
+                  <Icon name={d.icon} />
+                  {d.label}
+                  {d.k === "ddx" && ddx.length > 0 ? ` (${ddx.length})` : ""}
                 </button>
               ))}
             </div>
-          )}
-          <ErrorNote error={error} />
-          {note && <div className="notice small">{note}</div>}
+          </div>
+        </div>
+      )}
 
-          {active && tab === "patient" && (
-            <div className="card stack">
-              <form
-                className="row"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (question.trim()) {
-                    void call("ask", { question, useAI });
-                    setQuestion("");
-                  }
-                }}
-              >
-                <input className="input" style={{ flex: 1 }} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={`Ask the ${v.case.speaker === "family" ? "family member" : "patient"} a question`} aria-label="Question for the patient" maxLength={500} />
-                <button className="btn primary" disabled={busy || !question.trim()}>
-                  Ask
-                </button>
-              </form>
+      {panel && active && (
+        <Sheet
+          title={PANEL_TITLES[panel]}
+          onClose={() => setPanel(null)}
+          footer={
+            panel === "exam" ? (
+              <button className="btn primary block" disabled={busy || !examSel.length} onClick={() => { void call("exam", { maneuvers: examSel }); setExamSel([]); }}>
+                Examine {examSel.length || ""} {examSel.length ? `(${examMinutes} min)` : ""}
+              </button>
+            ) : panel === "orders" ? (
+              <button className="btn primary block" disabled={busy || !orderSel.length} onClick={() => { void call("order", { investigations: orderSel }); setOrderSel([]); }}>
+                Order {orderSel.length || ""}
+              </button>
+            ) : panel === "ddx" ? (
+              <button className="btn primary block" disabled={busy} onClick={() => call("ddx", { labels: ddx })}>
+                Save differential
+              </button>
+            ) : panel === "submit" ? (
+              <button className="btn green block lg" disabled={busy || !sub.diagnosis.trim()} onClick={() => call("submit", { ...sub, localization: sub.localization || undefined, differential: ddx })}>
+                Submit
+              </button>
+            ) : undefined
+          }
+        >
+          {panel === "ask" && (
+            <div className="stack">
               {ai?.mode === "live" && (
                 <label className="row small">
-                  <input type="checkbox" checked={useAI} onChange={(e) => setUseAI(e.target.checked)} /> Natural AI phrasing (the patient still only knows their own history)
+                  <input type="checkbox" checked={useAI} onChange={(e) => setUseAI(e.target.checked)} /> Natural AI phrasing (the {who} still only knows their own history)
                 </label>
               )}
-              <p className="small muted" style={{ margin: 0 }}>The patient knows symptoms and history, not exam findings or test results. Each question uses 1 simulated minute.</p>
+              <p className="small faint" style={{ margin: 0 }}>Tap a question or type your own below. The {who} knows symptoms and history, not exam findings or results. Each question takes 1 simulated minute.</p>
               {(["presenting", "neuro", "systemic", "background"] as const).map((g) => (
                 <div key={g}>
-                  <div className="small muted">{{ presenting: "Presenting complaint", neuro: "Neurological symptoms", systemic: "Systemic", background: "Background" }[g]}</div>
+                  <div className="eyebrow" style={{ marginBottom: 6 }}>{{ presenting: "Presenting complaint", neuro: "Neurological", systemic: "Systemic", background: "Background" }[g]}</div>
                   <div className="row">
                     {INTENTS.filter((i) => i.group === g).map((i) => (
                       <button key={i.id} className="chip" disabled={busy} onClick={() => call("ask", { intent: i.id })} title={i.ask}>
@@ -216,17 +282,17 @@ export function Encounter() {
             </div>
           )}
 
-          {active && tab === "exam" && (
-            <div className="card stack">
+          {panel === "exam" && (
+            <div className="stack">
               {Object.entries(EXAM_GROUP_LABELS).map(([g, label]) => (
                 <div key={g}>
-                  <div className="small muted">{label}</div>
+                  <div className="eyebrow" style={{ marginBottom: 6 }}>{label}</div>
                   <div className="row">
                     {MANEUVERS.filter((m) => m.group === g).map((m) => {
                       const on = examSel.includes(m.id);
                       return (
-                        <button key={m.id} className={`chip ${on ? "selected" : ""}`} aria-pressed={on} title={`${m.tests} (${m.minutes} min)`} onClick={() => setExamSel(on ? examSel.filter((x) => x !== m.id) : [...examSel, m.id])}>
-                          {examined.has(m.id) ? "✓ " : ""}
+                        <button key={m.id} className={`chip ${!on && examined.has(m.id) ? "correct" : ""}`} aria-pressed={on} title={`${m.tests} (${m.minutes} min)`} onClick={() => setExamSel(on ? examSel.filter((x) => x !== m.id) : [...examSel, m.id])}>
+                          {examined.has(m.id) && <Icon name="check" size={14} />}
                           {m.label}
                         </button>
                       );
@@ -234,98 +300,117 @@ export function Encounter() {
                   </div>
                 </div>
               ))}
-              <button className="btn primary" disabled={busy || !examSel.length} onClick={() => { void call("exam", { maneuvers: examSel }); setExamSel([]); }}>
-                Examine {examSel.length || ""} ({examMinutes} min)
-              </button>
             </div>
           )}
 
-          {active && tab === "orders" && (
-            <div className="card stack">
-              <input className="input" value={orderQuery} onChange={(e) => setOrderQuery(e.target.value)} placeholder="Search investigations (for example LP, CTA, AChR)" aria-label="Search investigations" />
-              <div style={{ maxHeight: 360, overflow: "auto" }}>
+          {panel === "orders" && (
+            <div className="stack-sm">
+              <input className="input" value={orderQuery} onChange={(e) => setOrderQuery(e.target.value)} placeholder="Search (for example LP, CTA, AChR)" aria-label="Search investigations" />
+              <p className="tiny faint">Results arrive after realistic turnaround times. Unnecessary tests never raise your score. <Link to="/reference?tab=investigations">Test guide</Link></p>
+              <div className="list">
                 {filteredInv.map((inv) => {
                   const on = orderSel.includes(inv.id);
                   const done = ordered.has(inv.id);
                   return (
-                    <button key={inv.id} className={`option ${on ? "selected" : ""}`} disabled={done} aria-pressed={on} onClick={() => setOrderSel(on ? orderSel.filter((x) => x !== inv.id) : [...orderSel, inv.id])}>
-                      <span style={{ flex: 1 }}>
-                        <strong>{inv.name}</strong> {done && <span className="badge gray">ordered</span>}
-                        <span className="tiny muted" style={{ display: "block" }}>
-                          {inv.question} Turnaround: {inv.turnaroundNote.replace(/\.$/, "")}. Cost {"$".repeat(inv.cost)}.
+                    <button key={inv.id} className={`list-row ${on ? "current" : ""}`} style={{ minHeight: 52, padding: "8px 12px" }} disabled={done} aria-pressed={on} onClick={() => setOrderSel(on ? orderSel.filter((x) => x !== inv.id) : [...orderSel, inv.id])}>
+                      <div className="grow">
+                        <div className="title small">
+                          {inv.name} {done && <span className="badge gray">ordered</span>}
+                        </div>
+                        <div className="sub">
+                          {inv.turnaroundNote.replace(/\.$/, "")} · {"$".repeat(inv.cost)}
+                        </div>
+                      </div>
+                      {on && (
+                        <span style={{ color: "var(--blue)" }}>
+                          <Icon name="check" size={18} />
                         </span>
-                      </span>
+                      )}
                     </button>
                   );
                 })}
               </div>
-              <p className="tiny muted">Results arrive after realistic turnaround times. Unnecessary tests never raise your score. <Link to="/reference?tab=investigations">Investigation guide</Link></p>
-              <button className="btn primary" disabled={busy || !orderSel.length} onClick={() => { void call("order", { investigations: orderSel }); setOrderSel([]); }}>
-                Order {orderSel.length || ""}
-              </button>
             </div>
           )}
 
-          {active && tab === "actions" && (
-            <div className="card stack">
-              <p className="small muted" style={{ margin: 0 }}>Actions happen at the current simulated time and can run alongside pending investigations.</p>
+          {panel === "actions" && (
+            <div className="stack">
+              <p className="small faint" style={{ margin: 0 }}>Actions happen now and can run alongside pending tests.</p>
               {(["stabilize", "treat", "monitor", "consult", "disposition"] as const).map((cat) => (
                 <div key={cat}>
-                  <div className="small muted" style={{ textTransform: "capitalize" }}>{cat}</div>
-                  {ACTIONS.filter((a) => a.category === cat).map((a) => {
-                    const done = v.actions.some((x) => x.id === a.id);
-                    return (
-                      <div key={a.id} className="row between" style={{ padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
-                        <span className="small">
-                          {a.label} {done && <span className="badge green">done</span>}
-                          <span className="tiny muted" style={{ display: "block" }}>{a.note}</span>
-                        </span>
-                        <button className="btn small" disabled={busy} onClick={() => call("action", { action: a.id })}>
-                          Do
-                        </button>
-                      </div>
-                    );
-                  })}
+                  <div className="eyebrow" style={{ marginBottom: 6 }}>{cat}</div>
+                  <div className="list">
+                    {ACTIONS.filter((a) => a.category === cat).map((a) => {
+                      const done = v.actions.some((x) => x.id === a.id);
+                      return (
+                        <div key={a.id} className="list-row" style={{ cursor: "default", minHeight: 52, padding: "8px 12px" }}>
+                          <div className="grow">
+                            <div className="title small">
+                              {a.label} {done && <span className="badge green">done</span>}
+                            </div>
+                            <div className="sub">{a.note}</div>
+                          </div>
+                          <button className="btn small" disabled={busy} onClick={() => call("action", { action: a.id })}>
+                            Do
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {active && tab === "ddx" && (
-            <div className="card stack">
-              <p className="small muted" style={{ margin: 0 }}>Rank your differential. Revise it as results arrive; revisions are tracked.</p>
-              <form className="row" onSubmit={(e) => { e.preventDefault(); if (ddxInput.trim()) { setDdx([...ddx, ddxInput.trim()]); setDdxInput(""); } }}>
-                <input className="input" style={{ flex: 1 }} value={ddxInput} onChange={(e) => setDdxInput(e.target.value)} placeholder="Add a diagnosis or syndrome" aria-label="Add to differential" />
+          {panel === "ddx" && (
+            <div className="stack-sm">
+              <p className="small faint" style={{ margin: 0 }}>Rank your differential, most likely first. Revise it as results arrive; revisions are tracked.</p>
+              <form className="ask-row" onSubmit={(e) => { e.preventDefault(); if (ddxInput.trim()) { setDdx([...ddx, ddxInput.trim()]); setDdxInput(""); } }}>
+                <input className="input" value={ddxInput} onChange={(e) => setDdxInput(e.target.value)} placeholder="Add a diagnosis or syndrome" aria-label="Add to differential" />
                 <button className="btn">Add</button>
               </form>
-              <ol style={{ paddingLeft: 0, listStyle: "none", margin: 0 }}>
+              <ol style={{ padding: 0, listStyle: "none", margin: 0 }}>
                 {ddx.map((d, i) => (
-                  <li key={`${d}-${i}`} className="option" style={{ alignItems: "center" }}>
+                  <li key={`${d}-${i}`} className="option" style={{ cursor: "default", marginTop: i ? 8 : 0, minHeight: 48, padding: "6px 8px 6px 12px" }}>
                     <span className="key">{i + 1}</span>
-                    <span style={{ flex: 1 }}>{d}</span>
-                    <button className="btn small" aria-label={`Move ${d} up`} disabled={i === 0} onClick={() => { const n = [...ddx]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setDdx(n); }}>Up</button>
-                    <button className="btn small" aria-label={`Remove ${d}`} onClick={() => setDdx(ddx.filter((_, k) => k !== i))}>Remove</button>
+                    <span className="grow">{d}</span>
+                    <button className="icon-btn" aria-label={`Move ${d} up`} disabled={i === 0} onClick={() => { const n = [...ddx]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setDdx(n); }}>
+                      <Icon name="up" />
+                    </button>
+                    <button className="icon-btn" aria-label={`Remove ${d}`} onClick={() => setDdx(ddx.filter((_, k) => k !== i))}>
+                      <Icon name="x" />
+                    </button>
                   </li>
                 ))}
               </ol>
-              <button className="btn primary" disabled={busy} onClick={() => call("ddx", { labels: ddx })}>
-                Save differential
-              </button>
             </div>
           )}
 
-          {active && tab === "submit" && (
-            <div className="card stack">
+          {panel === "wait" && (
+            <div className="stack">
+              <p className="small faint" style={{ margin: 0 }}>Fast-forward the simulation to let results come back. The patient keeps evolving while you wait.</p>
+              <div className="grid two">
+                {[5, 15, 60, 240].map((m) => (
+                  <button key={m} className="btn" disabled={busy} onClick={() => call("wait", { minutes: m })}>
+                    +{m >= 60 ? `${m / 60} h` : `${m} min`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {panel === "submit" && (
+            <div className="stack">
               <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
                 <legend className="field">What can the evidence support?</legend>
                 <div className="row">
                   {[
-                    ["diagnosis", "A specific diagnosis"],
+                    ["diagnosis", "A diagnosis"],
                     ["syndrome", "A syndrome"],
                     ["ranked-differential", "A ranked differential"],
-                    ["further-evaluation", "Needs further evaluation"],
+                    ["further-evaluation", "More workup needed"],
                   ].map(([k, l]) => (
-                    <button key={k} className={`chip ${sub.endpoint === k ? "selected" : ""}`} aria-pressed={sub.endpoint === k} onClick={() => setSub({ ...sub, endpoint: k })}>
+                    <button key={k} className="chip" aria-pressed={sub.endpoint === k} onClick={() => setSub({ ...sub, endpoint: k })}>
                       {l}
                     </button>
                   ))}
@@ -345,19 +430,20 @@ export function Encounter() {
                 </select>
               </div>
               <div>
-                <div className="field">Key findings supporting your conclusion</div>
+                <div className="field">Key findings that support it</div>
                 {v.findings.length ? (
-                  v.findings.map((f) => {
-                    const on = sub.keyFindings.includes(f.id);
-                    return (
-                      <label key={f.id} className="row small" style={{ alignItems: "flex-start", padding: "3px 0", flexWrap: "nowrap" }}>
-                        <input type="checkbox" checked={on} onChange={() => setSub({ ...sub, keyFindings: on ? sub.keyFindings.filter((x) => x !== f.id) : [...sub.keyFindings, f.id] })} />
-                        <span><span className="badge gray">{f.source}</span> {f.text}</span>
-                      </label>
-                    );
-                  })
+                  <div className="row">
+                    {v.findings.map((f) => {
+                      const on = sub.keyFindings.includes(f.id);
+                      return (
+                        <button key={f.id} className="chip" aria-pressed={on} onClick={() => setSub({ ...sub, keyFindings: on ? sub.keyFindings.filter((x) => x !== f.id) : [...sub.keyFindings, f.id] })}>
+                          {f.text}
+                        </button>
+                      );
+                    })}
+                  </div>
                 ) : (
-                  <p className="small muted">You have not gathered findings yet.</p>
+                  <p className="small faint">No findings gathered yet.</p>
                 )}
               </div>
               <div>
@@ -368,35 +454,12 @@ export function Encounter() {
                 <label className="field" htmlFor="next">Next steps</label>
                 <textarea id="next" className="input" value={sub.nextSteps} onChange={(e) => setSub({ ...sub, nextSteps: e.target.value })} placeholder="Further tests, treatment, disposition" />
               </div>
-              <p className="small muted">Your differential ({ddx.length} entries) is submitted too. Time taken is shown but never scored.</p>
-              <button className="btn primary" disabled={busy || !sub.diagnosis.trim()} onClick={() => call("submit", { ...sub, localization: sub.localization || undefined, differential: ddx })}>
-                Submit
-              </button>
+              <p className="tiny faint" style={{ margin: 0 }}>Your differential ({ddx.length}) is submitted too. Time is shown but never scored.</p>
             </div>
           )}
-
-          {v.status === "interpreting" && v.interpretation && (
-            <div className="card stack">
-              <h2>Interpretation</h2>
-              <p className="small muted">Your diagnosis is locked in. Interpret these results; some may be ones you did not order.</p>
-              {v.interpretation.map((q) => (
-                <div key={q.id} className="stack">
-                  <EventItem e={{ t: v.simMinutes, kind: "result", text: q.result.text, values: q.result.values, schematic: q.result.schematic, report: q.result.report }} />
-                  {!q.orderedByLearner && <span className="tiny muted">You did not order this test; it is shown for interpretation practice.</span>}
-                  <label className="field" htmlFor={`i-${q.id}`}>{q.question}</label>
-                  <textarea id={`i-${q.id}`} className="input" value={interp[q.id] ?? ""} onChange={(e) => setInterp({ ...interp, [q.id]: e.target.value })} />
-                </div>
-              ))}
-              <button className="btn primary" disabled={busy} onClick={() => call("interpret", { answers: interp })}>
-                Submit interpretation
-              </button>
-            </div>
-          )}
-
-          {v.status === "submitted" && v.grade && <Debrief v={v} />}
-        </section>
-      </div>
-    </div>
+        </Sheet>
+      )}
+    </FocusShell>
   );
 }
 
@@ -414,40 +477,44 @@ export function Debrief({ v }: { v: EncounterView }) {
   const d = g.debrief;
   return (
     <div className="stack">
-      <div className="card accent">
-        <div className="row between">
-          <h2 style={{ margin: 0 }}>Debrief</h2>
-          <strong>{Math.round(g.overall * 100)}%</strong>
+      <div className="card">
+        <div className="row nowrap" style={{ gap: 14 }}>
+          <span style={{ position: "relative", display: "inline-grid", placeItems: "center" }}>
+            <Ring value={g.overall} size={72} stroke={7} label={`Overall ${Math.round(g.overall * 100)} percent`} />
+            <strong style={{ position: "absolute", fontSize: "1.05rem" }}>{Math.round(g.overall * 100)}%</strong>
+          </span>
+          <div className="grow">
+            <div className="eyebrow">Case answer · {d.endpoint.replace("-", " ")}</div>
+            <h2 style={{ margin: "2px 0 0" }}>{d.diagnosisLabel}</h2>
+          </div>
         </div>
-        <p style={{ margin: "6px 0" }}>
-          <span className="muted">Case answer ({d.endpoint.replace("-", " ")}):</span> <strong>{d.diagnosisLabel}</strong>
-        </p>
-        <p className="small muted" style={{ margin: 0 }}>
-          A vignette like this supports a diagnosis; it does not prove one. Simulated time {g.simMinutes} min{g.fastForwardMinutes ? `, of which ${g.fastForwardMinutes} fast-forwarded` : ""}. Time is not scored.
+        <p className="tiny faint" style={{ margin: "10px 0 0" }}>
+          A vignette like this supports a diagnosis; it does not prove one. Simulated time {g.simMinutes} min{g.fastForwardMinutes ? `, ${g.fastForwardMinutes} fast-forwarded` : ""}. Time is not scored.
         </p>
       </div>
-      {Object.entries(g.dimensions)
-        .filter(([, x]) => x.weight > 0)
-        .map(([k, x]) => (
-          <div key={k} className="card tight">
-            <div className="row between">
-              <strong>{DIM_LABELS[k]}</strong>
-              <span>{Math.round(x.score * 100)}%</span>
-            </div>
-            <Bar value={x.score} label={`${DIM_LABELS[k]} score`} tone={x.score >= 0.8 ? "green" : "teal"} />
-            <p className="small" style={{ margin: "6px 0 0" }}>{x.summary}</p>
-            {x.details.length > 0 && (
-              <details open={x.details.length <= 2}>
-                <summary className="small">{x.details.length} detail{x.details.length > 1 ? "s" : ""}</summary>
-                <ul className="small" style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+      <div className="list">
+        {Object.entries(g.dimensions)
+          .filter(([, x]) => x.weight > 0)
+          .map(([k, x]) => (
+            <details key={k} className="list-row" style={{ display: "block", cursor: "pointer" }}>
+              <summary style={{ listStyle: "none" }}>
+                <div className="row between nowrap" style={{ marginBottom: 6 }}>
+                  <span className="title small">{DIM_LABELS[k]}</span>
+                  <strong className="small">{Math.round(x.score * 100)}%</strong>
+                </div>
+                <Bar value={x.score} label={`${DIM_LABELS[k]} score`} tone={x.score >= 0.8 ? "green" : "teal"} />
+                <div className="sub">{x.summary}</div>
+              </summary>
+              {x.details.length > 0 && (
+                <ul className="small" style={{ margin: "6px 0 0", paddingLeft: 18 }}>
                   {x.details.map((t, i) => (
                     <li key={i}>{t}</li>
                   ))}
                 </ul>
-              </details>
-            )}
-          </div>
-        ))}
+              )}
+            </details>
+          ))}
+      </div>
       {d.speedExplanation && (
         <div className="card">
           <h3>Why</h3>
@@ -517,7 +584,7 @@ export function Debrief({ v }: { v: EncounterView }) {
         <h3>Discuss with the AI tutor</h3>
         <TutorChat kind="encounter" encounterId={v.id} starter="What was the most important thing I missed, and why?" />
       </div>
-      <Link className="btn primary" to="/cases">
+      <Link className="btn primary block lg" to="/cases">
         Next case
       </Link>
     </div>

@@ -4,6 +4,8 @@ import { MODULE_BY_ID, ITEM_BY_ID, ITEMS } from "../lib/content";
 import { update, testOut } from "../lib/store";
 import { now } from "../../shared/clock";
 import { ItemView, type ItemResult } from "../components/ItemView";
+import { FocusShell } from "../components/FocusShell";
+import { Icon } from "../components/Icon";
 
 /** Pass rule: average at least 80%, no "I don't know", and a correct application item. */
 export function challengePassed(results: ItemResult[]): boolean {
@@ -25,72 +27,99 @@ export function Challenge() {
 
   if (!started)
     return (
-      <div className="stack">
-        <div className="small">
-          <Link to={`/learn/${m.id}`}>{m.title}</Link> / Challenge
+      <div>
+        <Link to={`/learn/${m.id}`} className="crumb">
+          <Icon name="back" /> {m.title}
+        </Link>
+        <div className="done-screen" style={{ paddingBottom: 8 }}>
+          <div className="big-ico" style={{ background: "var(--blue-soft)", color: "var(--blue)" }}>
+            <Icon name="skip" />
+          </div>
+          <h1>Test out</h1>
+          <p className="muted">
+            {items.length} questions on {m.title}, including one on a new presentation. Pass and the module is marked done.
+          </p>
         </div>
-        <h1>Challenge: {m.title}</h1>
-        <div className="card">
-          <p>{items.length} questions, including at least one application to a new presentation. Pass to skip this module. Explanations appear at the end.</p>
-          <p className="small muted">Passing needs an average of 80 percent, no "I don't know", and a correct application question. Skipped modules still get retention checks later.</p>
-          <button className="btn primary" onClick={() => setStarted(true)}>
-            Begin challenge
-          </button>
+        <div className="callout">
+          <span className="ico sm gray">
+            <Icon name="info" />
+          </span>
+          <div className="grow">To pass: average 80 percent or more, no "I don't know", and the application question right. Answers are revealed at the end. Skipped modules still get retention checks later.</div>
         </div>
+        <button className="btn primary block lg" style={{ marginTop: 16 }} onClick={() => setStarted(true)}>
+          Begin
+        </button>
       </div>
     );
 
   if (i < items.length) {
     return (
-      <div className="stack">
-        <div className="row between">
-          <h1 style={{ margin: 0 }}>Challenge</h1>
-          <span className="small muted">
-            {i + 1} of {items.length}
-          </span>
-        </div>
-        <div className="card">
-          <ItemView
-            key={items[i].id}
-            item={items[i]}
-            context="challenge"
-            showFeedback={false}
-            nextLabel={i === items.length - 1 ? "See result" : "Next"}
-            onDone={(r) => {
-              const next = [...results, r];
-              setResults(next);
-              setI(i + 1);
-              if (next.length === items.length) {
-                const passed = challengePassed(next);
-                update((x) => ({ ...x, challenges: { ...x.challenges, [m.id]: { passed, ts: now(), attemptIds: next.map((n) => n.attempt.id) } } }));
-                if (passed) {
-                  // Retention checks use other reviewable items from the module where available.
-                  const others = ITEMS.filter((it) => it.modules.includes(m.id) && it.usage.includes("review") && !m.challengeItems.includes(it.id)).map((it) => it.id);
-                  testOut(m.id, (others.length ? others : m.challengeItems).slice(0, 4));
-                }
+      <FocusShell closeTo={`/learn/${m.id}`} progress={i / items.length} count={`${i + 1}/${items.length}`}>
+        <ItemView
+          key={items[i].id}
+          item={items[i]}
+          context="challenge"
+          showFeedback={false}
+          label={`Test out · ${m.title}`}
+          nextLabel={i === items.length - 1 ? "See result" : "Continue"}
+          onDone={(r) => {
+            const next = [...results, r];
+            setResults(next);
+            setI(i + 1);
+            if (next.length === items.length) {
+              const passed = challengePassed(next);
+              update((x) => ({ ...x, challenges: { ...x.challenges, [m.id]: { passed, ts: now(), attemptIds: next.map((n) => n.attempt.id) } } }));
+              if (passed) {
+                // Retention checks use other reviewable items from the module where available.
+                const others = ITEMS.filter((it) => it.modules.includes(m.id) && it.usage.includes("review") && !m.challengeItems.includes(it.id)).map((it) => it.id);
+                testOut(m.id, (others.length ? others : m.challengeItems).slice(0, 4));
               }
-            }}
-          />
-        </div>
-      </div>
+            }
+          }}
+        />
+      </FocusShell>
     );
   }
 
   const passed = challengePassed(results);
+  const avg = results.reduce((t, r) => t + r.grade.score, 0) / Math.max(1, results.length);
   return (
-    <div className="stack">
-      <h1>{passed ? "Challenge passed" : "Not yet"}</h1>
-      <div className={`card ${passed ? "green" : "warn"}`}>
-        <p>{passed ? `You can skip ${m.title}. Retention checks will appear in your reviews over the coming weeks.` : "Some answers showed gaps. The lessons will fill them quickly, and missed questions come back in review."}</p>
-        <Link className="btn primary" to={passed ? "/learn" : `/learn/${m.id}`}>
-          {passed ? "Back to the map" : "Go to the lessons"}
+    <div>
+      <div className="done-screen">
+        <div className={`big-ico ${passed ? "" : "amber"}`}>
+          <Icon name={passed ? "check" : "target"} />
+        </div>
+        <h1>{passed ? "You tested out" : "Not yet"}</h1>
+        <p className="muted">{passed ? `${m.title} is marked done. Retention checks will show up in your reviews.` : "Some answers showed gaps. The lessons will fill them quickly, and missed questions come back in review."}</p>
+        <div className="score-row">
+          <div className="score">
+            <div className="v">{Math.round(avg * 100)}%</div>
+            <div className="l">Average</div>
+          </div>
+          <div className="score">
+            <div className="v">
+              {results.filter((r) => r.grade.score >= 0.8).length}/{results.length}
+            </div>
+            <div className="l">Right</div>
+          </div>
+        </div>
+        <Link className="btn primary block lg" to={passed ? "/learn" : `/learn/${m.id}`}>
+          {passed ? "Back to the course" : "Go to the lessons"}
         </Link>
       </div>
-      <div className="card">
-        <h2>Answers and explanations</h2>
+      <div className="section-title">
+        <h2>Answers</h2>
+      </div>
+      <div className="list">
         {results.map((r, k) => (
-          <div key={k} className="small" style={{ padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
-            <strong>{Math.round(r.grade.score * 100)}%</strong> {r.grade.feedback} <span className="muted">Expected: {r.grade.keySummary}</span>
+          <div key={k} className="list-row" style={{ cursor: "default", alignItems: "flex-start" }}>
+            <span className={`ico sm ${r.grade.score >= 0.8 ? "green" : r.grade.score > 0 ? "amber" : "red"}`}>
+              <Icon name={r.grade.score >= 0.8 ? "check" : "x"} />
+            </span>
+            <div className="grow small">
+              <div>{r.grade.feedback}</div>
+              <div className="sub">Expected: {r.grade.keySummary}</div>
+            </div>
           </div>
         ))}
       </div>

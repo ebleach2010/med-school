@@ -30,7 +30,7 @@ await page.goto(BASE + "/", { waitUntil: "networkidle" });
 let reached = false;
 for (let i = 0; i < 25 && !reached; i++) {
   await page.keyboard.press("Tab");
-  reached = await page.evaluate(() => document.activeElement?.textContent?.includes("Start (") ?? false);
+  reached = await page.evaluate(() => !!document.activeElement?.closest(".hero") && /Start|Resume/.test(document.activeElement.textContent ?? ""));
 }
 if (!reached) problems.push("keyboard: could not reach the recommended action");
 else {

@@ -26,11 +26,15 @@ const js = fs.readFileSync(`${outDir}/app.js`, "utf8").replace(/<\/script/gi, "<
 const css = fs.readFileSync(`${outDir}/app.css`, "utf8");
 if (!js.includes("VITE_STANDALONE") && !/standalone/i.test(js)) console.warn("warning: could not confirm the standalone flag in the bundle");
 
-const page = `<title>Neuro Tutor</title>
+const page = `<meta charset="utf-8">
+<title>Neuro Tutor</title>
 <meta name="description" content="Adaptive clinical neurology learning: placement, lessons, interactive models, patient simulations, and spaced review. Educational use only.">
 <meta name="apple-mobile-web-app-title" content="Neuro Tutor">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
 <style>${css}</style>
 <div id="root"></div>
 <script type="module">${js}</script>

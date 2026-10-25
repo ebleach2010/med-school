@@ -123,3 +123,22 @@ export function scheduleTestOutChecks(state: LearnerState, moduleId: string, ite
   }
   return { ...state, reviews, testedOut: state.testedOut.includes(moduleId) ? state.testedOut : [...state.testedOut, moduleId] };
 }
+
+/**
+ * Consecutive study days ending today. A streak that reached yesterday still counts until
+ * today ends, so opening the app in the morning does not show it as broken.
+ */
+export function streakDays(activity: LearnerState["activity"], nowTs: number): { days: number; today: boolean } {
+  const has = (ts: number) => (activity[dayKey(ts)]?.items ?? 0) > 0;
+  const today = has(nowTs);
+  // Step by calendar day at noon so daylight-saving shifts cannot skip or repeat a day.
+  const d = new Date(nowTs);
+  d.setHours(12, 0, 0, 0);
+  if (!today) d.setDate(d.getDate() - 1);
+  let days = 0;
+  while (has(d.getTime())) {
+    days++;
+    d.setDate(d.getDate() - 1);
+  }
+  return { days, today };
+}

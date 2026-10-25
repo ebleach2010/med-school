@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLearner, exportState } from "../lib/store";
-import { MODULES, MODULE_BY_ID, ITEM_BY_ID } from "../lib/content";
+import { MODULES, ITEM_BY_ID } from "../lib/content";
 import { bySkill, errorPatterns } from "../../shared/mastery";
 import { moduleRetention } from "../../shared/scheduler";
 import { now, dayKey, DAY_MS } from "../../shared/clock";
@@ -9,6 +9,7 @@ import { SKILLS, SKILL_LABELS, type Attempt } from "../../shared/types";
 import { Stars, StatusBadge, Bar } from "../components/Bits";
 import { stripMarkup } from "../../shared/text";
 import { STANDALONE, hostCapability, type DownloadsCap } from "../lib/platform";
+import { Icon } from "../components/Icon";
 
 const ERROR_LABELS: Record<string, string> = {
   "knowledge-gap": "Knowledge gap",
@@ -55,6 +56,7 @@ export function Progress() {
   const s = useLearner();
   const t = now();
   const [open, setOpen] = useState<string | null>(null);
+  const [view, setView] = useState<"overview" | "abilities" | "modules">("overview");
   const skills = bySkill(s.attempts, t);
   const baseline = bySkill(s.attempts, t, (a) => a.context === "placement");
   const firstSeen = new Set<string>();
@@ -96,153 +98,190 @@ export function Progress() {
   }
   const activeWeeks = new Set(Object.keys(s.activity).map((k) => Math.floor(new Date(k).getTime() / (7 * DAY_MS)))).size;
 
+  const metrics: [string, string, string][] = [
+    ["First try", pct(firstRight, firstTotal), `${firstTotal} items`],
+    ["Delayed recall", pct(delayed.filter((a) => a.score >= 0.8).length, delayed.length), `${delayed.length} reviews`],
+    ["New presentations", pct(unfamRight, unfamTotal), `${unfamTotal} seen`],
+    ["Case diagnosis", avg(dxAttempts) === null ? "No data" : `${Math.round(avg(dxAttempts)! * 100)}%`, avg(reasonAttempts) === null ? "No cases yet" : `reasoning ${Math.round(avg(reasonAttempts)! * 100)}%`],
+    ["Due soon", String(due7), `7 days · ${due30} in 30`],
+    ["With hints", String(hints), `of ${s.attempts.length} answers`],
+  ];
+
   return (
-    <div className="stack">
-      <h1>Progress</h1>
-      <div className="grid three">
-        <div className="card tight">
-          <div className="small muted">First-attempt accuracy</div>
-          <strong>{pct(firstRight, firstTotal)}</strong> <span className="small muted">({firstTotal} items)</span>
-        </div>
-        <div className="card tight">
-          <div className="small muted">Delayed recall (reviews)</div>
-          <strong>{pct(delayed.filter((a) => a.score >= 0.8).length, delayed.length)}</strong> <span className="small muted">({delayed.length})</span>
-        </div>
-        <div className="card tight">
-          <div className="small muted">Unfamiliar presentations</div>
-          <strong>{pct(unfamRight, unfamTotal)}</strong> <span className="small muted">({unfamTotal})</span>
-        </div>
-        <div className="card tight">
-          <div className="small muted">Case diagnosis vs reasoning</div>
-          <strong>{avg(dxAttempts) === null ? "No cases yet" : `${Math.round(avg(dxAttempts)! * 100)}% vs ${avg(reasonAttempts) === null ? "n/a" : Math.round(avg(reasonAttempts)! * 100) + "%"}`}</strong>
-        </div>
-        <div className="card tight">
-          <div className="small muted">Reviews due</div>
-          <strong>{due7}</strong> <span className="small muted">within 7 days, {due30} within 30</span>
-        </div>
-        <div className="card tight">
-          <div className="small muted">Answers with hints</div>
-          <strong>{hints}</strong> <span className="small muted">of {s.attempts.length}</span>
-        </div>
+    <div>
+      <div className="page-head">
+        <h1>Progress</h1>
+      </div>
+      <div className="seg block" role="tablist" aria-label="Progress view" style={{ margin: "0 0 14px" }}>
+        {(
+          [
+            ["overview", "Overview"],
+            ["abilities", "Abilities"],
+            ["modules", "Modules"],
+          ] as const
+        ).map(([k, l]) => (
+          <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)}>
+            {l}
+          </button>
+        ))}
       </div>
 
-      <div className="card">
-        <h2>Activity</h2>
-        <div className="heat" role="img" aria-label={`Study activity over the last 26 weeks; active in ${activeWeeks} weeks overall`}>
-          {days.map((d) => (
-            <span key={d.key} className={`l${d.level}`} title={d.label} />
-          ))}
-        </div>
-        <p className="tiny muted">Active in {activeWeeks} week{activeWeeks === 1 ? "" : "s"} so far. Breaks are not penalized.</p>
-      </div>
-
-      <div className="card">
-        <h2>Abilities</h2>
-        <p className="small muted">Current estimate compared with your placement baseline. Select a row to see the evidence behind it.</p>
-        {SKILLS.map((k) => {
-          const e = skills[k];
-          const b = baseline[k];
-          const ev = e.evidence.map((id) => s.attempts.find((a) => a.id === id)!).filter(Boolean);
-          return (
-            <div key={k} style={{ borderBottom: "1px solid var(--border)", padding: "8px 0" }}>
-              <button className="btn ghost block" style={{ justifyContent: "space-between", padding: 0, minHeight: 36 }} onClick={() => setOpen(open === k ? null : k)} aria-expanded={open === k}>
-                <span>{SKILL_LABELS[k]}</span>
-                <StatusBadge status={e.status} />
-              </button>
-              <Bar value={e.status === "unassessed" ? 0 : e.mean} label={`${SKILL_LABELS[k]} current`} />
-              <div className="tiny muted">
-                Now {e.status === "unassessed" ? "not assessed" : `${Math.round(e.mean * 100)}% ± ${Math.round(e.sd * 100)}`} · Baseline {b.status === "unassessed" ? "not assessed" : `${Math.round(b.mean * 100)}%`} · {e.independent} independent items, {e.presentations} presentations
-                {e.calibration !== undefined ? ` · "Sure" answers right ${Math.round(e.calibration * 100)}%` : ""}
+      {view === "overview" && (
+        <>
+          {s.attempts.length === 0 && (
+            <div className="callout" style={{ marginBottom: 12 }}>
+              <span className="ico sm">
+                <Icon name="target" />
+              </span>
+              <div className="grow">
+                No answers yet. Start with the <Link to="/placement">placement</Link>.
               </div>
-              {open === k && (
-                <div className="small" style={{ marginTop: 6 }}>
-                  <p className="muted">{e.why}</p>
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>When</th>
-                        <th>Question</th>
-                        <th>Score</th>
-                        <th>Confidence</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ev.slice(0, 15).map((a) => (
-                        <tr key={a.id}>
-                          <td>{new Date(a.ts).toLocaleDateString()} <span className="tiny muted">{a.context}</span></td>
-                          <td>
-                            {itemLabel(a)}
-                            <div className="tiny muted">You: {a.answerSummary}. Expected: {a.keySummary}. (version {a.itemVersion})</div>
-                          </td>
-                          <td>{Math.round(a.score * 100)}%</td>
-                          <td>{a.confidence}{a.selfReport ? `, ${a.selfReport}` : ""}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
-          );
-        })}
-      </div>
+          )}
+          <div className="grid two" style={{ gridTemplateColumns: "1fr 1fr" }}>
+            {metrics.map(([l, v, sub]) => (
+              <div key={l} className="card tight">
+                <div className="eyebrow">{l}</div>
+                <div style={{ fontSize: "1.3rem", fontWeight: 800 }}>{v}</div>
+                <div className="tiny faint">{sub}</div>
+              </div>
+            ))}
+          </div>
 
-      <div className="card">
-        <h2>Stars and retention</h2>
-        <p className="small muted">Stars are permanent achievements. Retention is an estimate of what you would recall today, so it falls over time until you review.</p>
-        <table className="data">
-          <thead>
-            <tr>
-              <th>Module</th>
-              <th>Stars</th>
-              <th>Current retention</th>
-            </tr>
-          </thead>
-          <tbody>
+          <div className="section-title">
+            <h2>Activity</h2>
+            <span className="tiny faint">Active {activeWeeks} week{activeWeeks === 1 ? "" : "s"}</span>
+          </div>
+          <div className="card tight">
+            <div className="heat" role="img" aria-label={`Study activity over the last 26 weeks; active in ${activeWeeks} weeks overall`}>
+              {days.map((d) => (
+                <span key={d.key} className={`l${d.level}`} title={d.label} />
+              ))}
+            </div>
+            <p className="tiny faint" style={{ margin: "8px 0 0" }}>Breaks are not penalized. Stars you earn are kept.</p>
+          </div>
+
+          <div className="section-title">
+            <h2>Error patterns</h2>
+          </div>
+          {errors.length ? (
+            <div className="row">
+              {errors.map((e) => (
+                <span key={e.tag} className="badge gray" style={{ fontSize: "0.8rem", padding: "4px 10px" }}>
+                  {ERROR_LABELS[e.tag] ?? e.tag} · {e.count}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="small faint">No errors recorded yet.</p>
+          )}
+
+          <div className="list" style={{ marginTop: 18 }}>
+            <button className="list-row" onClick={() => void download(`neuro-tutor-progress-${dayKey(Date.now())}.json`, exportState())}>
+              <span className="ico sm gray">
+                <Icon name="down" />
+              </span>
+              <div className="grow title">Export progress</div>
+            </button>
+            <Link className="list-row" to="/settings#data">
+              <span className="ico sm gray">
+                <Icon name="refresh" />
+              </span>
+              <div className="grow title">Import, sync, or reset</div>
+              <span className="chev">
+                <Icon name="chevron" />
+              </span>
+            </Link>
+          </div>
+          <p className="tiny faint" style={{ marginTop: 8 }}>Old attempts keep the content version they used.</p>
+        </>
+      )}
+
+      {view === "abilities" && (
+        <>
+          <p className="small faint" style={{ marginTop: 0 }}>Current estimate against your placement baseline. Tap one to see the evidence.</p>
+          <div className="list">
+            {SKILLS.map((k) => {
+              const e = skills[k];
+              const b = baseline[k];
+              const ev = e.evidence.map((id) => s.attempts.find((a) => a.id === id)!).filter(Boolean);
+              return (
+                <div key={k} className="list-row" style={{ display: "block" }}>
+                  <button className="linkish" style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", color: "inherit", marginBottom: 6 }} onClick={() => setOpen(open === k ? null : k)} aria-expanded={open === k}>
+                    <span className="title small">{SKILL_LABELS[k]}</span>
+                    <StatusBadge status={e.status} />
+                  </button>
+                  <Bar value={e.status === "unassessed" ? 0 : e.mean} label={`${SKILL_LABELS[k]} current`} tone={e.status === "demonstrated" ? "green" : "teal"} />
+                  <div className="sub">
+                    Now {e.status === "unassessed" ? "not assessed" : `${Math.round(e.mean * 100)}% ± ${Math.round(e.sd * 100)}`} · baseline {b.status === "unassessed" ? "none" : `${Math.round(b.mean * 100)}%`} · {e.independent} items, {e.presentations} presentations
+                    {e.calibration !== undefined ? ` · "Sure" right ${Math.round(e.calibration * 100)}%` : ""}
+                  </div>
+                  {open === k && (
+                    <div className="small" style={{ marginTop: 8 }}>
+                      <p className="muted">{e.why}</p>
+                      <div className="table-wrap">
+                        <table className="data">
+                          <thead>
+                            <tr>
+                              <th>When</th>
+                              <th>Question</th>
+                              <th>Score</th>
+                              <th>Sure?</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ev.slice(0, 15).map((a) => (
+                              <tr key={a.id}>
+                                <td>
+                                  {new Date(a.ts).toLocaleDateString()} <span className="tiny faint">{a.context}</span>
+                                </td>
+                                <td>
+                                  {itemLabel(a)}
+                                  <div className="tiny faint">
+                                    You: {a.answerSummary}. Expected: {a.keySummary}. (v{a.itemVersion})
+                                  </div>
+                                </td>
+                                <td>{Math.round(a.score * 100)}%</td>
+                                <td>
+                                  {a.confidence}
+                                  {a.selfReport ? `, ${a.selfReport}` : ""}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {view === "modules" && (
+        <>
+          <p className="small faint" style={{ marginTop: 0 }}>Stars are permanent. Retention estimates what you would recall today, so it falls until you review.</p>
+          <div className="list">
             {MODULES.filter((m) => m.status !== "planned").map((m) => {
               const r = moduleRetention(reviews, m.id, t);
               return (
-                <tr key={m.id}>
-                  <td>
-                    <Link to={`/learn/${m.id}`}>{m.title}</Link>
-                    {s.testedOut.includes(m.id) && <span className="badge green" style={{ marginLeft: 6 }}>tested out</span>}
-                  </td>
-                  <td>
-                    <Stars stars={s.stars.filter((x) => x.moduleId === m.id)} />
-                  </td>
-                  <td>{r === null ? <span className="muted">Not scheduled</span> : `${Math.round(r * 100)}%`}</td>
-                </tr>
+                <Link key={m.id} to={`/learn/${m.id}`} className="list-row">
+                  <div className="grow">
+                    <div className="title small">{m.title}</div>
+                    <div className="sub">
+                      {s.testedOut.includes(m.id) ? "Tested out · " : ""}
+                      {r === null ? "Not scheduled yet" : `Retention ${Math.round(r * 100)}%`}
+                    </div>
+                  </div>
+                  <Stars stars={s.stars.filter((x) => x.moduleId === m.id)} />
+                </Link>
               );
             })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="card">
-        <h2>Error patterns</h2>
-        {errors.length ? (
-          <ul className="small">
-            {errors.map((e) => (
-              <li key={e.tag}>
-                {ERROR_LABELS[e.tag] ?? e.tag}: {e.count}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="small muted">No errors recorded yet.</p>
-        )}
-      </div>
-
-      <div className="row">
-        <button className="btn" onClick={() => void download(`neuro-tutor-progress-${dayKey(Date.now())}.json`, exportState())}>
-          Export progress
-        </button>
-        <Link className="btn ghost" to="/settings#data">
-          Import, sync, or reset
-        </Link>
-      </div>
-      {s.attempts.length === 0 && <p className="small muted">No answers yet. Start with the <Link to="/placement">placement assessment</Link>.</p>}
-      <p className="tiny muted">Modules referenced: {MODULE_BY_ID.size}. Old attempts keep the content version they used.</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

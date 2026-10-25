@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { freshState, makeAttempt, applyAttempt, migrate } from "../shared/learner";
+import { freshState, makeAttempt, applyAttempt, migrate, streakDays } from "../shared/learner";
 import { gradeItem } from "../shared/grading";
 import { estimate } from "../shared/mastery";
 import { nextPlacementItem, placementReport } from "../shared/placement";
 import { buildPath, recommendNext } from "../shared/recommend";
 import { dueEntries, whyDue, moduleRetention } from "../shared/scheduler";
-import { DAY_MS } from "../shared/clock";
+import { DAY_MS, dayKey } from "../shared/clock";
 import { ITEMS, ITEM_BY_ID, SCREENING_IDS } from "../content/items";
 import { MODULES, MODULE_BY_ID } from "../content/curriculum";
 import { LESSONS } from "../content/lessons";
@@ -156,5 +156,20 @@ describe("persistence", () => {
   it("rejects malformed imports", () => {
     expect(migrate({ schemaVersion: 2 })).toBeNull();
     expect(migrate("nonsense")).toBeNull();
+  });
+});
+
+describe("study streak", () => {
+  const noon = new Date(2026, 9, 20, 12).getTime();
+  const act = (...daysAgo: number[]) => Object.fromEntries(daysAgo.map((d) => [dayKey(noon - d * DAY_MS), { minutes: 3, items: 2 }]));
+  it("counts consecutive days ending today", () => {
+    expect(streakDays(act(0, 1, 2), noon)).toEqual({ days: 3, today: true });
+  });
+  it("keeps yesterday's streak alive until today ends", () => {
+    expect(streakDays(act(1, 2), noon)).toEqual({ days: 2, today: false });
+  });
+  it("a gap resets it", () => {
+    expect(streakDays(act(0, 2, 3), noon)).toEqual({ days: 1, today: true });
+    expect(streakDays(act(2, 3), noon)).toEqual({ days: 0, today: false });
   });
 });

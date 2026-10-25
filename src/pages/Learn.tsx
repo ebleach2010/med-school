@@ -1,106 +1,160 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useLearner } from "../lib/store";
 import { DOMAINS, MODULES, MODULE_BY_ID } from "../lib/content";
-import { buildPath } from "../../shared/recommend";
-import { moduleRetention } from "../../shared/scheduler";
+import { buildPath, type PathEntry } from "../../shared/recommend";
 import { now } from "../../shared/clock";
-import { Stars, StatusBadge } from "../components/Bits";
+import type { LearnerState, Module } from "../../shared/types";
+import { Stars } from "../components/Bits";
+import { Icon, Ring } from "../components/Icon";
+
+/** Share of a module's lessons finished; tested-out modules count as complete. */
+export function moduleProgress(m: Module, s: LearnerState): number {
+  if (s.testedOut.includes(m.id)) return 1;
+  if (!m.lessons.length) return 0;
+  return m.lessons.filter((id) => s.lessonProgress[id]?.completedAt).length / m.lessons.length;
+}
+
+export function pathLine(p: PathEntry, m: Module): string {
+  switch (p.status) {
+    case "done":
+      return "Complete";
+    case "tested-out":
+      return "Tested out";
+    case "can-skip":
+      return "Placement says you can skip this";
+    case "remediate":
+      return "Placement found a gap";
+    case "locked":
+      return `After ${m.prerequisites.map((x) => MODULE_BY_ID.get(x)?.title).filter(Boolean)[0] ?? "prerequisites"}`;
+    default:
+      return m.lessons.length ? `${m.lessons.length} lesson${m.lessons.length === 1 ? "" : "s"} · ${m.minutes} min` : "Practice questions; lessons coming";
+  }
+}
+
+export function ModuleRow({ m, p, s, current }: { m: Module; p: PathEntry; s: LearnerState; current?: boolean }) {
+  const prog = moduleProgress(m, s);
+  return (
+    <Link to={`/learn/${m.id}`} className={`list-row ${p.status === "locked" ? "dim" : ""} ${current ? "current" : ""}`}>
+      <Ring value={prog} size={40} stroke={4} icon={p.status === "locked" ? "lock" : p.status === "tested-out" ? "skip" : "book"} />
+      <div className="grow">
+        <div className="title">{m.title}</div>
+        <div className="sub" style={p.status === "remediate" ? { color: "var(--red)", fontWeight: 700 } : undefined}>
+          {current ? "Up next · " : ""}
+          {pathLine(p, m)}
+        </div>
+      </div>
+      <Stars stars={s.stars.filter((x) => x.moduleId === m.id)} size={14} />
+    </Link>
+  );
+}
 
 export function Learn() {
   const s = useLearner();
   const t = now();
-  const [showPlanned, setShowPlanned] = useState(true);
-  const [view, setView] = useState<"map" | "path">("path");
   const path = buildPath(MODULES, s, t);
+  const order = new Map(path.map((p, i) => [p.moduleId, i]));
   const pathBy = new Map(path.map((p) => [p.moduleId, p]));
-  const counts = { complete: MODULES.filter((m) => m.status === "complete").length, partial: MODULES.filter((m) => m.status === "partial").length, planned: MODULES.filter((m) => m.status === "planned").length };
+  const live = MODULES.filter((m) => m.status !== "planned");
+  const planned = MODULES.filter((m) => m.status === "planned");
   const recommended = path.find((p) => p.status === "remediate") ?? path.find((p) => p.status === "next");
-  const reviews = Object.values(s.reviews);
+  const overall = live.reduce((a, m) => a + moduleProgress(m, s), 0) / Math.max(1, live.length);
 
-  const tile = (id: string) => {
-    const m = MODULE_BY_ID.get(id)!;
-    const p = pathBy.get(id)!;
-    const ret = moduleRetention(reviews, id, t);
-    return (
-      <Link key={id} to={`/learn/${id}`} className={`card tight module-tile ${m.status === "planned" ? "planned" : ""}`} aria-label={`${m.title}, ${m.status}`}>
-        <div className="row between">
-          <strong>{m.title}</strong>
-          <Stars stars={s.stars.filter((x) => x.moduleId === id)} size={14} />
-        </div>
-        <div className="row">
-          <StatusBadge status={m.status} />
-          {m.status !== "planned" && <StatusBadge status={p.status} />}
-          {recommended?.moduleId === id && <span className="badge blue">Recommended</span>}
-          {ret !== null && <span className="badge gray">Retention {Math.round(ret * 100)}%</span>}
-        </div>
-        {m.prerequisites.length > 0 && <span className="tiny muted">After: {m.prerequisites.map((x) => MODULE_BY_ID.get(x)?.title).join(", ")}</span>}
-      </Link>
-    );
-  };
+  const units = DOMAINS.map((d) => ({
+    d,
+    mods: live.filter((m) => m.domain === d.id).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)),
+  }))
+    .filter((u) => u.mods.length)
+    .sort((a, b) => Math.min(...a.mods.map((m) => order.get(m.id) ?? 0)) - Math.min(...b.mods.map((m) => order.get(m.id) ?? 0)));
 
   return (
-    <div className="stack">
-      <div className="row between">
-        <h1 style={{ margin: 0 }}>Learn</h1>
-        <div className="tabs" role="tablist" style={{ margin: 0, border: 0 }}>
-          <button role="tab" aria-selected={view === "path"} onClick={() => setView("path")}>
-            Your path
-          </button>
-          <button role="tab" aria-selected={view === "map"} onClick={() => setView("map")}>
-            Full map
-          </button>
+    <div>
+      <div className="page-head">
+        <div>
+          <h1>Neurology</h1>
+          <div className="small faint">
+            {live.length} modules ready · {planned.length} coming
+          </div>
         </div>
+        <Ring value={overall} size={52} stroke={6} label={`${Math.round(overall * 100)} percent complete`} />
       </div>
-      <p className="small muted">
-        {counts.complete} modules complete, {counts.partial} partial, {counts.planned} planned. Planned modules show their scope but have no lessons yet. You can open any module; the path only recommends an order.
-      </p>
 
-      {view === "path" && (
-        <div className="stack">
-          {path
-            .filter((p) => p.status !== "planned")
-            .map((p, i) => {
-              const m = MODULE_BY_ID.get(p.moduleId)!;
-              return (
-                <Link key={p.moduleId} to={`/learn/${p.moduleId}`} className={`card tight module-tile ${recommended?.moduleId === p.moduleId ? "accent" : ""}`} style={{ minHeight: 0 }}>
-                  <div className="row between">
-                    <span>
-                      <span className="muted small">{i + 1}. </span>
-                      <strong>{m.title}</strong>
-                    </span>
-                    <Stars stars={s.stars.filter((x) => x.moduleId === p.moduleId)} size={14} />
-                  </div>
-                  <div className="row small">
-                    <StatusBadge status={p.status} />
-                    <span className="muted">{p.reason}</span>
-                  </div>
-                </Link>
-              );
-            })}
+      {units.map(({ d, mods }, i) => {
+        const done = mods.filter((m) => moduleProgress(m, s) >= 1).length;
+        const hasRec = mods.some((m) => m.id === recommended?.moduleId);
+        return (
+          <details key={d.id} className="unit" open={hasRec || i === 0}>
+            <summary>
+              <Ring value={done / mods.length} size={36} stroke={4} />
+              <div className="grow">
+                <div className="sub" style={{ fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", fontSize: "0.7rem" }}>
+                  Unit {i + 1}
+                </div>
+                <div className="title">{d.title}</div>
+                <div className="sub">
+                  {done} of {mods.length} done
+                </div>
+              </div>
+              <span className="chev">
+                <Icon name="chevron" />
+              </span>
+            </summary>
+            <div className="unit-body">
+              {mods.map((m) => (
+                <ModuleRow key={m.id} m={m} p={pathBy.get(m.id)!} s={s} current={m.id === recommended?.moduleId} />
+              ))}
+            </div>
+          </details>
+        );
+      })}
+
+      <details className="unit" style={{ marginTop: 10 }}>
+        <summary>
+          <span className="ico gray sm">
+            <Icon name="clock" />
+          </span>
+          <div className="grow">
+            <div className="title">Coming soon</div>
+            <div className="sub">{planned.length} planned modules. Scope is listed; lessons are not written yet.</div>
+          </div>
+          <span className="chev">
+            <Icon name="chevron" />
+          </span>
+        </summary>
+        <div className="unit-body">
+          {planned.map((m) => (
+            <Link key={m.id} to={`/learn/${m.id}`} className="list-row dim" style={{ minHeight: 48 }}>
+              <div className="grow">
+                <div className="title" style={{ fontWeight: 600 }}>{m.title}</div>
+                <div className="sub">{DOMAINS.find((d) => d.id === m.domain)?.title}</div>
+              </div>
+              <span className="chev">
+                <Icon name="chevron" />
+              </span>
+            </Link>
+          ))}
         </div>
-      )}
+      </details>
 
-      {view === "map" && (
-        <>
-          <label className="row small">
-            <input type="checkbox" checked={showPlanned} onChange={(e) => setShowPlanned(e.target.checked)} /> Show planned modules
-          </label>
-          {DOMAINS.map((d) => {
-            const mods = MODULES.filter((m) => m.domain === d.id && (showPlanned || m.status !== "planned"));
-            if (!mods.length) return null;
-            return (
-              <section key={d.id} className="map-domain" aria-label={d.title}>
-                <h2>{d.title}</h2>
-                <div className="module-grid">{mods.map((m) => tile(m.id))}</div>
-              </section>
-            );
-          })}
-        </>
-      )}
-      <p className="small">
-        <Link to="/animations">Browse all interactive models</Link> · <Link to="/reference?tab=coverage">Content coverage and review status</Link>
-      </p>
+      <div className="list" style={{ marginTop: 14 }}>
+        <Link to="/animations" className="list-row">
+          <span className="ico teal sm">
+            <Icon name="film" />
+          </span>
+          <div className="grow title">Interactive models</div>
+          <span className="chev">
+            <Icon name="chevron" />
+          </span>
+        </Link>
+        <Link to="/reference?tab=coverage" className="list-row">
+          <span className="ico gray sm">
+            <Icon name="list" />
+          </span>
+          <div className="grow title">What is covered and reviewed</div>
+          <span className="chev">
+            <Icon name="chevron" />
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }

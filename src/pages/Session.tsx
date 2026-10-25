@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLearner, setResume } from "../lib/store";
 import { MODULES, LESSONS, LESSON_BY_ID } from "../lib/content";
 import { recommendNext } from "../../shared/recommend";
@@ -8,6 +8,8 @@ import { now } from "../../shared/clock";
 import { ReviewRunner } from "./Review";
 import { SpeedRunner } from "./Speed";
 import { LessonPlayer } from "./LessonPlayer";
+import { ContinueBar, FocusShell } from "../components/FocusShell";
+import { Icon } from "../components/Icon";
 
 type Step = { kind: "review"; count: number } | { kind: "lesson"; id: string } | { kind: "speed"; count: number };
 
@@ -33,6 +35,7 @@ export function planSession(minutes: number, dueCount: number, lessonId: string 
 
 export function Session() {
   const s = useLearner();
+  const nav = useNavigate();
   const plan = useMemo(() => {
     const t = now();
     const rec = recommendNext(MODULES, LESSONS, s, t);
@@ -40,48 +43,46 @@ export function Session() {
     return planSession(s.settings.sessionMinutes, dueEntries(s.reviews, t).length, lessonId, lessonId ? LESSON_BY_ID.get(lessonId)!.minutes : 0);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [i, setI] = useState(0);
-  const [started] = useState(Date.now());
-  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => setResume("/session", "Study session"), []);
-  useEffect(() => {
-    if (!s.settings.showTimers) return;
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
-    return () => clearInterval(id);
-  }, [s.settings.showTimers, started]);
 
   const step = plan[i];
-  const label = (st: Step) => (st.kind === "review" ? `Review ${st.count} items` : st.kind === "lesson" ? LESSON_BY_ID.get(st.id)?.title ?? "Lesson" : `${st.count} speed cases`);
+  const label = (st: Step) => (st.kind === "review" ? `Review ${st.count}` : st.kind === "lesson" ? "Lesson" : `${st.count} speed cases`);
 
   return (
-    <div className="stack">
-      <div className="row between">
-        <h1 style={{ margin: 0 }}>{s.settings.sessionMinutes ? `${s.settings.sessionMinutes}-minute session` : "Open session"}</h1>
-        {s.settings.showTimers && <span className="badge gray mono">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</span>}
-      </div>
-      <ol className="row small" style={{ listStyle: "none", padding: 0 }} aria-label="Session plan">
-        {plan.map((st, k) => (
-          <li key={k} className={`badge ${k === i ? "blue" : k < i ? "green" : "gray"}`}>
-            {k + 1}. {label(st)}
-          </li>
-        ))}
-      </ol>
+    <FocusShell closeTo="/" closeLabel="Pause session">
+      {step && plan.length > 1 && (
+        <div className="row small" style={{ gap: 6, marginBottom: 10 }} aria-label="Session plan">
+          {plan.map((st, k) => (
+            <span key={k} className={`badge ${k === i ? "blue" : k < i ? "green" : "gray"}`}>
+              {k < i && <Icon name="check" size={12} />}
+              {label(st)}
+            </span>
+          ))}
+        </div>
+      )}
       {!step && (
-        <div className="card green">
-          <h2>Session complete</h2>
-          <p className="small muted">Nice work. Everything is saved.</p>
-          <Link className="btn primary" to="/">Back to Today</Link>
-        </div>
+        <>
+          <div className="done-screen">
+            <div className="big-ico">
+              <Icon name="check" />
+            </div>
+            <h1>Session complete</h1>
+            <p className="muted">Nice work. Everything is saved.</p>
+          </div>
+          <ContinueBar onClick={() => nav("/")} />
+        </>
       )}
-      {step?.kind === "review" && <ReviewRunner limit={step.count} onFinish={() => setI(i + 1)} />}
-      {step?.kind === "lesson" && <LessonPlayer lesson={LESSON_BY_ID.get(step.id)!} onFinish={() => setI(i + 1)} />}
-      {step?.kind === "speed" && <SpeedRunner count={step.count} onNext={() => setI(i + 1)} />}
+      {step?.kind === "review" && <ReviewRunner key={i} limit={step.count} onFinish={() => setI(i + 1)} />}
+      {step?.kind === "lesson" && <LessonPlayer key={i} lesson={LESSON_BY_ID.get(step.id)!} onFinish={() => setI(i + 1)} />}
+      {step?.kind === "speed" && <SpeedRunner key={i} count={step.count} onNext={() => setI(i + 1)} />}
       {step && (
-        <div className="row">
-          <Link to="/" className="btn ghost">Pause</Link>
-          <button className="btn ghost" onClick={() => setI(i + 1)}>Skip this part</button>
+        <div style={{ marginTop: 20, textAlign: "center" }}>
+          <button className="linkish small" onClick={() => setI(i + 1)}>
+            Skip this part
+          </button>
         </div>
       )}
-    </div>
+    </FocusShell>
   );
 }

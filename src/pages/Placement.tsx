@@ -8,7 +8,15 @@ import { now } from "../../shared/clock";
 import { SKILL_LABELS } from "../../shared/types";
 import { ItemView } from "../components/ItemView";
 import { Bar, StatusBadge } from "../components/Bits";
+import { FocusShell } from "../components/FocusShell";
+import { Icon, type IconName } from "../components/Icon";
 import { Disclaimer } from "./Today";
+
+const FACTS: [IconName, string][] = [
+  ["clock", "About 15 to 30 questions. Stop any time; it picks up where you left off."],
+  ["target", "Starts with one question per ability, then asks more only where your level is unclear."],
+  ["info", "Tap \"I don't know\" freely. Guessing makes the estimate worse, not better."],
+];
 
 export function Placement() {
   const s = useLearner();
@@ -21,25 +29,34 @@ export function Placement() {
 
   if (!p) {
     return (
-      <div className="stack">
-        <h1>Placement assessment</h1>
-        <div className="card">
-          <p>A short adaptive check of nine abilities: terminology, localization, mechanisms, history and examination, differential diagnosis, choosing investigations, interpreting results, emergencies, and reasoning under uncertainty.</p>
-          <ul className="small">
-            <li>It starts with a 9-question screen, then asks more only where your level is unclear.</li>
-            <li>Usually 15 to 30 questions. Stop any time; it resumes where you left off.</li>
-            <li>Choose "I don't know" freely. Guessing makes the estimate worse, not better.</li>
-            <li>One right answer never counts as mastery. Topics need several independent correct answers, including a different presentation.</li>
-          </ul>
-          <Disclaimer />
-          <div className="row" style={{ marginTop: 10 }}>
-            <button className="btn primary" onClick={() => update((x) => ({ ...x, placement: { status: "in-progress", startedAt: now(), answered: [] } }))}>
-              Start placement
-            </button>
-            <Link className="btn ghost" to="/learn">
-              Skip and explore freely
-            </Link>
+      <div>
+        <div className="done-screen" style={{ paddingBottom: 8 }}>
+          <div className="big-ico" style={{ background: "var(--blue-soft)", color: "var(--blue)" }}>
+            <Icon name="target" />
           </div>
+          <h1>Find your level</h1>
+          <p className="muted">A short adaptive check of nine abilities, from terminology and localization to emergencies and reasoning under uncertainty. Your path then skips what you know.</p>
+        </div>
+        <div className="list">
+          {FACTS.map(([icon, text]) => (
+            <div key={text} className="list-row" style={{ cursor: "default" }}>
+              <span className="ico sm">
+                <Icon name={icon} />
+              </span>
+              <div className="grow small">{text}</div>
+            </div>
+          ))}
+        </div>
+        <div className="stack-sm" style={{ marginTop: 16 }}>
+          <button className="btn primary block lg" onClick={() => update((x) => ({ ...x, placement: { status: "in-progress", startedAt: now(), answered: [] } }))}>
+            Start placement
+          </button>
+          <Link className="btn ghost block" to="/learn">
+            Skip and explore freely
+          </Link>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <Disclaimer compact />
         </div>
       </div>
     );
@@ -48,7 +65,7 @@ export function Placement() {
   if (p.status === "in-progress") {
     // Pin the current question in state so recording an answer cannot swap the item mid-question.
     const computed = p.current && !p.answered.includes(p.current) ? null : nextPlacementItem(p, placementAttempts, ITEMS, SCREENING_IDS, now());
-    const pick = p.current && !p.answered.includes(p.current) ? { itemId: p.current, phase: p.answered.length < SCREENING_IDS.length ? ("screen" as const) : ("branch" as const), reason: p.answered.length < SCREENING_IDS.length ? "Screening block: one question per ability." : "Gathering more evidence where your estimate is still uncertain." } : computed;
+    const pick = p.current && !p.answered.includes(p.current) ? { itemId: p.current, phase: p.answered.length < SCREENING_IDS.length ? ("screen" as const) : ("branch" as const) } : computed;
     if (pick && p.current !== pick.itemId) setTimeout(() => update((x) => (x.placement && !x.placement.current ? { ...x, placement: { ...x.placement, current: pick.itemId } } : x)), 0);
     if (!pick) {
       // Nothing left to ask: finish.
@@ -56,34 +73,25 @@ export function Placement() {
       return <p>Finishing...</p>;
     }
     const item = ITEM_BY_ID.get(pick.itemId)!;
+    const screening = pick.phase === "screen";
+    const total = screening ? SCREENING_IDS.length : Math.min(PLACEMENT_MAX_ITEMS, p.answered.length + 6);
     return (
-      <div className="stack">
-        <div className="row between">
-          <h1 style={{ margin: 0 }}>Placement</h1>
-          <span className="small muted">
-            Question {p.answered.length + 1} {pick.phase === "screen" ? `of ${SCREENING_IDS.length} (screening)` : `(focused, max ${PLACEMENT_MAX_ITEMS})`}
-          </span>
-        </div>
-        <Bar value={p.answered.length / Math.max(SCREENING_IDS.length, Math.min(PLACEMENT_MAX_ITEMS, p.answered.length + 6))} label="Placement progress" tone="blue" />
-        <p className="small muted">{pick.reason}</p>
-        <div className="card">
-          <ItemView
-            item={item}
-            context="placement"
-            showFeedback={false}
-            nextLabel="Next question"
-            onDone={() => update((x) => ({ ...x, placement: { ...x.placement!, answered: [...x.placement!.answered, item.id], current: undefined } }))}
-          />
-        </div>
-        <div className="row">
-          <Link to="/" className="btn ghost">
-            Pause (resume later)
-          </Link>
-          <button className="btn ghost" onClick={() => update((x) => ({ ...x, placement: { ...x.placement!, status: "complete", finishedAt: now(), endedEarly: true }, resume: null }))}>
-            Finish now
-          </button>
-        </div>
-      </div>
+      <FocusShell closeTo="/" closeLabel="Pause placement" progress={p.answered.length / Math.max(SCREENING_IDS.length, total)} count={`${p.answered.length + 1}${screening ? `/${SCREENING_IDS.length}` : ""}`}>
+        <ItemView
+          item={item}
+          context="placement"
+          showFeedback={false}
+          label={screening ? "Placement · screening" : "Placement · narrowing down"}
+          onDone={() => update((x) => ({ ...x, placement: { ...x.placement!, answered: [...x.placement!.answered, item.id], current: undefined } }))}
+        />
+        {p.answered.length >= 3 && (
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <button className="linkish small" onClick={() => update((x) => ({ ...x, placement: { ...x.placement!, status: "complete", finishedAt: now(), endedEarly: true }, resume: null }))}>
+              Finish now and see results
+            </button>
+          </div>
+        )}
+      </FocusShell>
     );
   }
 
@@ -101,119 +109,116 @@ function PlacementReportView() {
   const more = r.modules.filter((m) => m.verdict === "needs-assessment");
 
   return (
-    <div className="stack">
-      <h1>Your placement results</h1>
-      <p className="small muted">
-        Based on {r.itemsAnswered} questions{s.placement?.endedEarly ? " (ended early, so more areas need assessment)" : ""}. {r.idkCount ? `You chose "I don't know" ${r.idkCount} times, which keeps the estimates honest.` : ""}
-      </p>
-      <Disclaimer />
+    <div>
+      <div className="done-screen" style={{ paddingBottom: 4 }}>
+        <div className="big-ico">
+          <Icon name="check" />
+        </div>
+        <h1>Placement done</h1>
+        <p className="muted small">
+          {r.itemsAnswered} questions{s.placement?.endedEarly ? ", ended early" : ""}
+          {r.idkCount ? `, ${r.idkCount} honest "I don't know"` : ""}. {r.strengths.length} of 9 abilities clearly demonstrated.
+        </p>
+      </div>
 
-      <div className="card teal">
-        <div className="small muted">Recommended starting point</div>
+      <div className="hero">
+        <div className="eyebrow">Start here</div>
         <h2>{rec.title}</h2>
-        <p className="small">{rec.why}</p>
-        <Link className="btn primary" to={rec.route}>
+        <p>{rec.why}</p>
+        <Link className="btn" to={rec.route}>
           Start
         </Link>
       </div>
 
-      <div className="card">
+      <div className="section-title">
         <h2>Abilities</h2>
-        <table className="data">
-          <thead>
-            <tr>
-              <th>Ability</th>
-              <th>Status</th>
-              <th>Evidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(r.skills).map(([k, e]) => (
-              <tr key={k}>
-                <td>{SKILL_LABELS[k as keyof typeof SKILL_LABELS]}</td>
-                <td>
-                  <StatusBadge status={e.status} />
-                </td>
-                <td className="small muted">
-                  {e.why} {e.independent ? `(${e.independent} items, estimate ${Math.round(e.mean * 100)}% ± ${Math.round(e.sd * 100)})` : ""}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      </div>
+      <div className="list">
+        {Object.entries(r.skills).map(([k, e]) => (
+          <div key={k} className="list-row" style={{ display: "block", cursor: "default" }}>
+            <div className="row between nowrap" style={{ marginBottom: 6 }}>
+              <span className="title small">{SKILL_LABELS[k as keyof typeof SKILL_LABELS]}</span>
+              <StatusBadge status={e.status} />
+            </div>
+            <Bar value={e.status === "unassessed" ? 0 : e.mean} label={`${SKILL_LABELS[k as keyof typeof SKILL_LABELS]} estimate`} tone={e.status === "demonstrated" ? "green" : "teal"} />
+            {e.independent > 0 && (
+              <div className="sub">
+                {e.independent} item{e.independent === 1 ? "" : "s"} · estimate {Math.round(e.mean * 100)}% ± {Math.round(e.sd * 100)}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="grid two">
-        <div className="card green">
-          <h2>Demonstrated strengths</h2>
-          {r.strengths.length ? (
-            <ul className="small">
-              {r.strengths.map((k) => (
-                <li key={k}>{SKILL_LABELS[k]}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="small muted">No ability met the bar yet: several independent correct answers across different presentations.</p>
-          )}
-        </div>
-        <div className="card">
-          <h2>Topics you can test out of</h2>
-          {testOuts.length ? (
-            <>
-              {testOuts.map((m) => (
-                <div key={m.moduleId} className="row between small" style={{ padding: "4px 0" }}>
-                  <span>{MODULE_BY_ID.get(m.moduleId)?.title}</span>
-                  {s.testedOut.includes(m.moduleId) ? (
-                    <span className="badge green">Skipped</span>
-                  ) : (
-                    <button className="btn small" onClick={() => testOut(m.moduleId, MODULE_BY_ID.get(m.moduleId)!.challengeItems)}>
-                      Skip it
-                    </button>
-                  )}
-                </div>
-              ))}
-              <p className="tiny muted">Skipped modules still get occasional retention checks.</p>
-            </>
-          ) : (
-            <p className="small muted">None yet. You can still challenge any module from the Learn map.</p>
-          )}
-        </div>
-        <div className="card danger">
-          <h2>Gaps that need instruction</h2>
-          {gaps.length ? (
-            gaps.map((m) => (
-              <div key={m.moduleId} className="row between small" style={{ padding: "4px 0" }}>
-                <Link to={`/learn/${m.moduleId}`}>{MODULE_BY_ID.get(m.moduleId)?.title}</Link>
-                <span className="muted">{m.why}</span>
+      {testOuts.length > 0 && (
+        <>
+          <div className="section-title">
+            <h2>You can skip</h2>
+          </div>
+          <div className="list">
+            {testOuts.map((m) => (
+              <div key={m.moduleId} className="list-row" style={{ cursor: "default" }}>
+                <span className="ico sm green">
+                  <Icon name="skip" />
+                </span>
+                <div className="grow title small">{MODULE_BY_ID.get(m.moduleId)?.title}</div>
+                {s.testedOut.includes(m.moduleId) ? (
+                  <span className="badge green">Skipped</span>
+                ) : (
+                  <button className="btn small" onClick={() => testOut(m.moduleId, MODULE_BY_ID.get(m.moduleId)!.challengeItems)}>
+                    Skip it
+                  </button>
+                )}
               </div>
-            ))
-          ) : (
-            <p className="small muted">No clear gaps found in the modules sampled.</p>
-          )}
-        </div>
-        <div className="card warn">
-          <h2>Needs more assessment</h2>
-          {more.length || r.needsMore.length ? (
-            <>
-              {more.map((m) => (
-                <div key={m.moduleId} className="small">
-                  {MODULE_BY_ID.get(m.moduleId)?.title}: <span className="muted">{m.why}</span>
+            ))}
+          </div>
+          <p className="tiny faint" style={{ marginTop: 6 }}>Skipped modules still get occasional retention checks.</p>
+        </>
+      )}
+
+      {gaps.length > 0 && (
+        <>
+          <div className="section-title">
+            <h2>Gaps to fill</h2>
+          </div>
+          <div className="list">
+            {gaps.map((m) => (
+              <Link key={m.moduleId} to={`/learn/${m.moduleId}`} className="list-row">
+                <span className="ico sm red">
+                  <Icon name="target" />
+                </span>
+                <div className="grow">
+                  <div className="title small">{MODULE_BY_ID.get(m.moduleId)?.title}</div>
+                  <div className="sub">{m.why}</div>
                 </div>
-              ))}
-              {r.needsMore.length > 0 && <p className="small muted">Abilities still uncertain: {r.needsMore.map((k) => SKILL_LABELS[k]).join(", ")}.</p>}
-            </>
-          ) : (
-            <p className="small muted">Nothing outstanding.</p>
-          )}
+                <span className="chev">
+                  <Icon name="chevron" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+
+      {(more.length > 0 || r.needsMore.length > 0) && (
+        <div className="callout" style={{ marginTop: 16 }}>
+          <span className="ico sm amber">
+            <Icon name="info" />
+          </span>
+          <div className="grow">
+            <strong>Not enough evidence yet</strong>
+            <p style={{ margin: "2px 0 0" }}>
+              {[...more.map((m) => MODULE_BY_ID.get(m.moduleId)?.title), ...r.needsMore.map((k) => SKILL_LABELS[k])].filter(Boolean).join(", ")}.{" "}
+              <button className="linkish" onClick={() => update((x) => ({ ...x, placement: { ...x.placement!, status: "in-progress", endedEarly: false } }))}>
+                Keep assessing
+              </button>
+            </p>
+          </div>
         </div>
-      </div>
-      <div className="row">
-        <Link to="/learn" className="btn">
-          Open the curriculum map
-        </Link>
-        <button className="btn ghost" onClick={() => update((x) => ({ ...x, placement: { ...x.placement!, status: "in-progress", endedEarly: false } }))}>
-          Continue assessing
-        </button>
+      )}
+
+      <div style={{ marginTop: 16 }}>
+        <Disclaimer compact />
       </div>
     </div>
   );

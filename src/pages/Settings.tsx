@@ -19,43 +19,45 @@ export function Settings() {
 
   return (
     <div className="stack">
-      <h1>Settings</h1>
+      <div className="page-head" style={{ marginBottom: 0 }}>
+        <h1>Settings</h1>
+      </div>
 
       <section className="card stack" aria-labelledby="pacing">
-        <h2 id="pacing">Pacing and display</h2>
-        <div className="row">
-          <label className="field" htmlFor="len">Default session</label>
-          <select id="len" className="input" style={{ width: "auto" }} value={s.settings.sessionMinutes} onChange={(e) => set({ sessionMinutes: Number(e.target.value) as 3 | 5 | 10 | 20 | 0 })}>
-            {[3, 5, 10, 20, 0].map((m) => (
-              <option key={m} value={m}>{m ? `${m} minutes` : "Unrestricted"}</option>
+        <h2 id="pacing">Display</h2>
+        <div className="row between nowrap">
+          <span className="small" style={{ fontWeight: 700 }}>Theme</span>
+          <div className="seg" role="group" aria-label="Theme">
+            {([["system", "Auto"], ["light", "Light"], ["dark", "Dark"]] as const).map(([v, l]) => (
+              <button key={String(v)} aria-pressed={s.settings.theme === v} onClick={() => set({ theme: v })}>
+                {l}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
-        <label className="row">
-          <input type="checkbox" checked={s.settings.showTimers} onChange={(e) => set({ showTimers: e.target.checked })} /> Show session timer (optional; time is never scored)
+        <div className="row between nowrap">
+          <span className="small" style={{ fontWeight: 700 }}>Text size</span>
+          <div className="seg" role="group" aria-label="Text size">
+            {([[1, "A"], [1.125, "A+"], [1.25, "A++"]] as const).map(([v, l]) => (
+              <button key={String(v)} aria-pressed={s.settings.textScale === v} onClick={() => set({ textScale: v })}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="row between nowrap">
+          <span className="small" style={{ fontWeight: 700 }}>Motion</span>
+          <div className="seg" role="group" aria-label="Motion">
+            {([["system", "Auto"], ["on", "Reduced"], ["off", "Full"]] as const).map(([v, l]) => (
+              <button key={String(v)} aria-pressed={s.settings.reducedMotion === v} onClick={() => set({ reducedMotion: v })}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="row nowrap small">
+          <input type="checkbox" checked={s.settings.showTimers} onChange={(e) => set({ showTimers: e.target.checked })} /> Show a timer in sessions (time is never scored)
         </label>
-        <div className="row">
-          <label className="field" htmlFor="motion">Motion</label>
-          <select id="motion" className="input" style={{ width: "auto" }} value={s.settings.reducedMotion} onChange={(e) => set({ reducedMotion: e.target.value as "system" | "on" | "off" })}>
-            <option value="system">Follow system setting</option>
-            <option value="on">Reduce motion</option>
-            <option value="off">Full animation</option>
-          </select>
-        </div>
-        <div className="row">
-          <label className="field" htmlFor="theme">Theme</label>
-          <select id="theme" className="input" style={{ width: "auto" }} value={s.settings.theme} onChange={(e) => set({ theme: e.target.value as "system" | "light" | "dark" })}>
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-          <label className="field" htmlFor="scale">Text size</label>
-          <select id="scale" className="input" style={{ width: "auto" }} value={s.settings.textScale} onChange={(e) => set({ textScale: Number(e.target.value) as 1 | 1.125 | 1.25 })}>
-            <option value={1}>Standard</option>
-            <option value={1.125}>Large</option>
-            <option value={1.25}>Larger</option>
-          </select>
-        </div>
       </section>
 
       {STANDALONE ? <HostedAI /> : <AISettings />}

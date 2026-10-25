@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { ANTIBODY_BY_ID, INVESTIGATION_BY_ID } from "../lib/content";
 import { ProvenanceLine } from "../components/Provenance";
+import { Icon } from "../components/Icon";
 
 function Row({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
@@ -18,9 +19,9 @@ export function AntibodyDetail() {
   if (!a) return <p>Not found.</p>;
   return (
     <div className="stack">
-      <div className="small">
-        <Link to="/reference?tab=antibodies">Reference</Link> / {a.name}
-      </div>
+      <Link to="/reference?tab=antibodies" className="crumb">
+        <Icon name="back" /> Antibodies
+      </Link>
       <h1>{a.name}</h1>
       <div className="row">
         <span className={`badge ${a.evidence === "established" ? "green" : a.evidence === "probable" ? "blue" : "amber"}`}>Evidence: {a.evidence}</span>
@@ -60,9 +61,9 @@ export function InvestigationDetail() {
   if (!i) return <p>Not found.</p>;
   return (
     <div className="stack">
-      <div className="small">
-        <Link to="/reference?tab=investigations">Reference</Link> / {i.name}
-      </div>
+      <Link to="/reference?tab=investigations" className="crumb">
+        <Icon name="back" /> Tests
+      </Link>
       <h1>{i.name}</h1>
       <div className="row">
         <span className="badge gray">{i.category}</span>

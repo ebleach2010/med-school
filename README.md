@@ -98,6 +98,8 @@ The live provider paths have not yet been run against a real key. They are teste
 - `ADMIN_TOKEN`: if set, review actions require this token
 - `ANTHROPIC_API_KEY`, or `OPENAI_COMPATIBLE_API_KEY` with `OPENAI_COMPATIBLE_BASE_URL`: optional
 
+The interface font (Figtree) loads from Google Fonts. If that request is blocked or offline, the app falls back to the system font and works the same.
+
 ## Content and evidence rules
 
 - Content may cite only sources in `content/sources.ts`. Each was checked on 2026-10-25, and its record says how. A model's own knowledge is never a citation.

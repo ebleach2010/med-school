@@ -6,6 +6,7 @@ import { api } from "../lib/api";
 import { useReviewOverrides } from "../lib/hooks";
 import { effectiveReview, ReviewBadge } from "../components/Provenance";
 import { TermButton } from "../components/RichText";
+import { Icon } from "../components/Icon";
 
 type Tab = "antibodies" | "investigations" | "glossary" | "sources" | "coverage";
 
@@ -22,13 +23,15 @@ export function Reference() {
   const tab = (params.get("tab") as Tab) ?? "antibodies";
   const setTab = (t: Tab) => setParams({ tab: t });
   return (
-    <div className="stack">
-      <h1>Reference</h1>
+    <div>
+      <div className="page-head">
+        <h1>Reference</h1>
+      </div>
       <div className="tabs" role="tablist">
         {(
           [
             ["antibodies", "Antibodies"],
-            ["investigations", "Investigations"],
+            ["investigations", "Tests"],
             ["glossary", "Glossary"],
             ["sources", "Sources"],
             ["coverage", "Coverage"],
@@ -65,15 +68,25 @@ function Antibodies() {
   }, [q, cat, ev]);
   return (
     <div className="stack">
-      <div className="notice small">
-        <strong>Coverage as of {ANTIBODY_COVERAGE.coverageDate}.</strong> {ANTIBODY_COVERAGE.scope} This is not a complete list of every reported antibody.{" "}
-        <button className="btn small ghost" onClick={() => setShowGaps((g) => !g)} aria-expanded={showGaps}>
-          {showGaps ? "Hide" : "Show"} known gaps ({ANTIBODY_COVERAGE.gaps.length})
-        </button>
+      <div className="callout">
+        <span className="ico sm amber">
+          <Icon name="info" />
+        </span>
+        <div className="grow">
+          <p>
+            <strong>Coverage as of {ANTIBODY_COVERAGE.coverageDate}.</strong> Not every reported antibody is listed.{" "}
+            <button className="linkish" onClick={() => setShowGaps((g) => !g)} aria-expanded={showGaps}>
+              {showGaps ? "Hide details" : `Scope and ${ANTIBODY_COVERAGE.gaps.length} known gaps`}
+            </button>
+          </p>
+          <p>Test by phenotype, on the right specimen, with the right assay. A negative panel does not exclude immune-mediated disease.</p>
+        </div>
       </div>
       {showGaps && (
         <div className="card warn small">
+          <p>{ANTIBODY_COVERAGE.scope}</p>
           <p>{ANTIBODY_COVERAGE.method}</p>
+          <p>A low-titer positive in the wrong syndrome rarely establishes the diagnosis.</p>
           <ul>
             {ANTIBODY_COVERAGE.gaps.map((g) => (
               <li key={g.name}>
@@ -86,19 +99,16 @@ function Antibodies() {
           ))}
         </div>
       )}
-      <div className="card tight small">
-        Test by phenotype, on the right specimen, with the right assay. A negative panel does not exclude immune-mediated disease, and a positive low-titer result in the wrong syndrome rarely establishes it.
-      </div>
-      <div className="row">
-        <input className="input" style={{ flex: "1 1 200px" }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, target, or phenotype" aria-label="Search antibodies" />
-        <select className="input" style={{ width: "auto" }} value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Category">
-          <option value="">All categories</option>
+      <div className="row nowrap" style={{ gap: 6 }}>
+        <input className="input" style={{ flex: "1 1 auto", minWidth: 0 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" aria-label="Search antibodies" />
+        <select className="input" style={{ width: 96, flex: "none", padding: "8px" }} value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Category">
+          <option value="">Type</option>
           {["neural-surface", "neural-intracellular", "neuromuscular", "peripheral-nerve", "demyelinating", "systemic"].map((c) => (
             <option key={c} value={c}>{c.replace("-", " ")}</option>
           ))}
         </select>
-        <select className="input" style={{ width: "auto" }} value={ev} onChange={(e) => setEv(e.target.value)} aria-label="Evidence strength">
-          <option value="">Any evidence</option>
+        <select className="input" style={{ width: 112, flex: "none", padding: "8px" }} value={ev} onChange={(e) => setEv(e.target.value)} aria-label="Evidence strength">
+          <option value="">Evidence</option>
           {["established", "probable", "emerging", "uncertain"].map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -114,30 +124,18 @@ function Antibodies() {
           ))}
         </div>
       )}
-      <div style={{ overflowX: "auto" }}><table className="data">
-        <thead>
-          <tr>
-            <th>Antibody</th>
-            <th>Main phenotypes</th>
-            <th>Evidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.map((a) => (
-            <tr key={a.id}>
-              <td>
-                <Link to={`/reference/antibody/${a.id}`}>{a.name}</Link>
-                <div className="tiny muted">{a.target}</div>
-              </td>
-              <td className="small">{a.phenotypes.slice(0, 3).join("; ")}</td>
-              <td>
-                <span className={`badge ${a.evidence === "established" ? "green" : a.evidence === "probable" ? "blue" : "amber"}`}>{a.evidence}</span>
-                {a.availability !== "clinical" && <div className="tiny muted">{a.availability}</div>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table></div>
+      <div className="list">
+        {list.map((a) => (
+          <Link key={a.id} to={`/reference/antibody/${a.id}`} className="list-row">
+            <div className="grow">
+              <div className="title small">{a.name}</div>
+              <div className="sub">{a.phenotypes.slice(0, 3).join("; ")}</div>
+            </div>
+            <span className={`badge ${a.evidence === "established" ? "green" : a.evidence === "probable" ? "blue" : "amber"}`}>{a.evidence}</span>
+          </Link>
+        ))}
+        {!list.length && <div className="list-row faint small">No matches.</div>}
+      </div>
     </div>
   );
 }
@@ -149,17 +147,22 @@ function Investigations() {
   return (
     <div className="stack">
       <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search investigations" aria-label="Search investigations" />
-      <p className="small muted">Each entry explains the question it answers, urgency, specimen or protocol, typical turnaround, limitations, and what positive and negative results do and do not mean. Reference ranges vary by laboratory.</p>
+      <p className="small faint" style={{ margin: 0 }}>What each test answers, when to send it, turnaround, limits, and what results do and do not mean. Reference ranges vary by laboratory.</p>
       {cats.map((c) => (
         <div key={c}>
-          <h2 style={{ textTransform: "capitalize" }}>{c}</h2>
-          <div className="grid two">
+          <div className="eyebrow" style={{ margin: "4px 2px 6px" }}>{c}</div>
+          <div className="list">
             {list
               .filter((i) => i.category === c)
               .map((i) => (
-                <Link key={i.id} to={`/reference/investigation/${i.id}`} className="card tight" style={{ textDecoration: "none", color: "inherit" }}>
-                  <strong>{i.name}</strong>
-                  <div className="tiny muted">{i.question}</div>
+                <Link key={i.id} to={`/reference/investigation/${i.id}`} className="list-row">
+                  <div className="grow">
+                    <div className="title small">{i.name}</div>
+                    <div className="sub">{i.question}</div>
+                  </div>
+                  <span className="chev">
+                    <Icon name="chevron" />
+                  </span>
                 </Link>
               ))}
           </div>
@@ -175,11 +178,13 @@ function Glossary() {
   return (
     <div className="stack">
       <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search terms" aria-label="Search glossary" />
-      <div className="grid two">
+      <div className="list">
         {list.map((t) => (
-          <div key={t.id} className="card tight">
-            <TermButton id={t.id}>{t.term}</TermButton> {t.pronunciation && <span className="tiny muted">{t.pronunciation}</span>}
-            <div className="small">{t.plain}</div>
+          <div key={t.id} className="list-row" style={{ display: "block", cursor: "default" }}>
+            <div className="title small">
+              <TermButton id={t.id}>{t.term}</TermButton> {t.pronunciation && <span className="tiny faint" style={{ fontWeight: 400 }}>{t.pronunciation}</span>}
+            </div>
+            <div className="sub" style={{ color: "var(--text-2)" }}>{t.plain}</div>
           </div>
         ))}
       </div>
@@ -190,26 +195,26 @@ function Glossary() {
 function Sources() {
   return (
     <div className="stack">
-      <p className="small muted">
+      <p className="small faint" style={{ margin: 0 }}>
         Evidence registry checked {SOURCES_COVERAGE_DATE}. Content may cite only these. An AI model's internal knowledge is never treated as a citation. Superseded guidelines are kept for context and marked.
       </p>
       {(["guideline", "consensus-criteria", "trial", "review", "primary-research", "curriculum", "lab-catalog"] as const).map((k) => {
         const list = SOURCES.filter((s) => s.kind === k);
         if (!list.length) return null;
         return (
-          <div key={k} className="card">
-            <h2 style={{ textTransform: "capitalize" }}>{k.replace("-", " ")}s</h2>
-            <ul className="small" style={{ paddingLeft: 18 }}>
+          <div key={k}>
+            <div className="eyebrow" style={{ margin: "4px 2px 6px" }}>{k.replace("-", " ")}s</div>
+            <div className="list">
               {list.map((s) => (
-                <li key={s.id} style={{ marginBottom: 6 }}>
-                  <a href={s.url} target="_blank" rel="noreferrer">
-                    {s.citation}
-                  </a>
-                  {s.pmid && <span className="muted"> PMID {s.pmid}.</span>}
-                  <div className="tiny muted">{s.verificationNote}</div>
-                </li>
+                <a key={s.id} href={s.url} target="_blank" rel="noreferrer" className="list-row" style={{ display: "block" }}>
+                  <div className="small" style={{ color: "var(--blue)" }}>{s.citation}</div>
+                  <div className="sub">
+                    {s.pmid ? `PMID ${s.pmid}. ` : ""}
+                    {s.verificationNote}
+                  </div>
+                </a>
               ))}
-            </ul>
+            </div>
           </div>
         );
       })}
@@ -247,7 +252,7 @@ function Coverage() {
       <div className="card">
         <h2>Review status</h2>
         <p className="small muted">"AI draft" means drafted from cited sources by a model and not yet checked by a clinician. Approve items in the <Link to="/admin">review workspace</Link>.</p>
-        <div style={{ overflowX: "auto" }}><table className="data">
+        <div className="table-wrap"><table className="data">
           <thead>
             <tr>
               <th>Content</th>
@@ -284,7 +289,7 @@ function Coverage() {
       </div>
       <div className="card">
         <h2>Coverage matrix</h2>
-        <div style={{ overflowX: "auto" }}><table className="data">
+        <div className="table-wrap"><table className="data">
           <thead>
             <tr>
               <th>Domain</th>

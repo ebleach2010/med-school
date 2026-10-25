@@ -4,15 +4,15 @@ import type { CaseSummary, EncounterMode } from "../../shared/types";
 import { api } from "../lib/api";
 import { useLearner, update } from "../lib/store";
 import { now } from "../../shared/clock";
-import { ReviewBadge } from "../components/Provenance";
+import { Icon } from "../components/Icon";
 import { ErrorNote } from "../components/Bits";
 import type { EncounterView } from "../lib/encounterTypes";
 
 const MODE_INFO: Record<Exclude<EncounterMode, "speed">, { label: string; text: string }> = {
-  full: { label: "Full workup", text: "No question limit. Graded on localization, differential, investigations, prioritization, and interpretation." },
+  full: { label: "Workup", text: "No question limit. Graded on localization, differential, investigations, prioritization, and interpretation." },
   emergency: { label: "Emergency", text: "The clock runs. Stabilize and act on time-critical steps; investigations and treatment can run in parallel." },
-  uncertainty: { label: "Diagnostic uncertainty", text: "The right endpoint may be a syndrome, a ranked differential, or further evaluation." },
-  longitudinal: { label: "Longitudinal clinic", text: "Follow a patient across visits with evolving symptoms, treatment responses, and adverse effects." },
+  uncertainty: { label: "Uncertain", text: "The right endpoint may be a syndrome, a ranked differential, or further evaluation." },
+  longitudinal: { label: "Clinic", text: "Follow a patient across visits with evolving symptoms, treatment responses, and adverse effects." },
 };
 
 export function Cases() {
@@ -41,63 +41,77 @@ export function Cases() {
   const list = (cases ?? []).filter((c) => c.modes.includes(mode));
 
   return (
-    <div className="stack">
-      <h1>Cases</h1>
-      <div className="card teal row between">
-        <div>
-          <h2 style={{ margin: 0 }}>Two-question speed round</h2>
-          <p className="small muted" style={{ margin: 0 }}>A brief presentation, two requests, then your diagnosis. No hints.</p>
-        </div>
-        <Link className="btn primary" to="/speed">
-          Play
-        </Link>
+    <div>
+      <div className="page-head">
+        <h1>Cases</h1>
       </div>
 
-      {inProgress.length > 0 && (
-        <div className="card accent">
-          <h2>Resume</h2>
-          {inProgress.map(([id, e]) => (
-            <div key={id} className="row between small">
-              <span>
-                {e.caseLabel} <span className="badge gray">{e.mode}</span>
-              </span>
-              <Link to={`/encounter/${id}`}>Continue</Link>
+      <div className="list">
+        <Link to="/speed" className="list-row">
+          <span className="ico amber">
+            <Icon name="bolt" />
+          </span>
+          <div className="grow">
+            <div className="title">Speed round</div>
+            <div className="sub">Brief presentation, two requests, then your diagnosis</div>
+          </div>
+          <span className="chev">
+            <Icon name="chevron" />
+          </span>
+        </Link>
+        {inProgress.map(([id, e]) => (
+          <Link key={id} to={`/encounter/${id}`} className="list-row current">
+            <span className="ico">
+              <Icon name="play" />
+            </span>
+            <div className="grow">
+              <div className="title">{e.caseLabel}</div>
+              <div className="sub">In progress · {MODE_INFO[e.mode as keyof typeof MODE_INFO]?.label ?? e.mode}</div>
             </div>
-          ))}
-        </div>
-      )}
+            <span className="chev">
+              <Icon name="chevron" />
+            </span>
+          </Link>
+        ))}
+      </div>
 
-      <div className="tabs" role="tablist" aria-label="Encounter mode">
+      <div className="section-title">
+        <h2>Patient encounters</h2>
+      </div>
+      <div className="seg block" role="tablist" aria-label="Encounter mode">
         {(Object.keys(MODE_INFO) as (keyof typeof MODE_INFO)[]).map((k) => (
           <button key={k} role="tab" aria-selected={mode === k} onClick={() => setMode(k)}>
             {MODE_INFO[k].label}
           </button>
         ))}
       </div>
-      <p className="small muted">{MODE_INFO[mode].text} Case titles never reveal the diagnosis.</p>
+      <p className="small faint" style={{ margin: "8px 2px 12px" }}>{MODE_INFO[mode].text}</p>
       <ErrorNote error={error} />
       {!cases && !error && <p className="muted">Loading cases...</p>}
-      <div className="grid two">
-        {list.map((c) => (
-          <div key={c.id} className="card">
-            <div className="row between">
-              <strong>{c.label}</strong>
-              <ReviewBadge provenance={c.provenance} status={c.review} />
-            </div>
-            <p className="small" style={{ margin: "6px 0" }}>
-              {c.age}-year-old {c.sex}, {c.setting}. {c.chiefComplaint}
-            </p>
-            <div className="row between">
-              <span className="badge gray">Difficulty {c.difficulty}</span>
-              <button className="btn small primary" onClick={() => start(c)}>
-                Start
-              </button>
-            </div>
-          </div>
-        ))}
-        {cases && !list.length && <p className="small muted">No cases in this mode yet.</p>}
-      </div>
-      <p className="tiny muted">All patients here are synthetic teaching simulations, not real people. No real patient records are used.</p>
+      {list.length > 0 && (
+        <div className="list">
+          {list.map((c) => (
+            <button key={c.id} className="list-row" onClick={() => start(c)}>
+              <span className="ico teal">
+                <Icon name="steth" />
+              </span>
+              <div className="grow">
+                <div className="title">{c.label}</div>
+                <div className="sub">
+                  {c.age} {c.sex === "female" ? "F" : "M"} · {c.setting} · {c.chiefComplaint}
+                </div>
+              </div>
+              <span className="row nowrap" style={{ gap: 3 }} role="img" aria-label={`Difficulty ${c.difficulty} of 3`}>
+                {[1, 2, 3].map((n) => (
+                  <span key={n} style={{ width: 6, height: 14, borderRadius: 3, background: n <= c.difficulty ? "var(--teal)" : "var(--surface-3)" }} />
+                ))}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+      {cases && !list.length && <p className="small muted">No cases in this mode yet.</p>}
+      <p className="tiny faint" style={{ marginTop: 12 }}>Every patient here is a synthetic teaching simulation. Case titles never reveal the diagnosis.</p>
     </div>
   );
 }

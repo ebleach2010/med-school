@@ -7,7 +7,7 @@ Status as of 2026-10-25. "Done" means implemented and covered by an automated te
 | # | Item | Status | Notes |
 |---|---|---|---|
 | 1 | Placement assessment | Done | 9-item screen, then adaptive branching by ability; resumable; "I don't know"; confidence on every answer; self-reported slip vs gap; report with strengths, test-out modules, gaps, needs-more-assessment, recommended start. |
-| 2 | Personalized curriculum map | Done | Prerequisite graph (topological), path view and full map, placement verdicts, remediation first, planned modules shown as planned. |
+| 2 | Personalized curriculum map | Done | Prerequisite graph (topological) shown as a course outline: units in path order, per-module progress rings and stars, placement verdicts, remediation first, planned modules grouped under "Coming soon". |
 | 3 | Several complete lessons | Done | 12 lessons across 10 complete modules. Progressive disclosure with four explanation layers per concept and optional AI tutor. |
 | 4 | At least three animations | Done | Six: neuraxis lesion explorer, NMJ comparator, conduction explorer, vascular territory map with penumbra, eye movement simulator, seizure spread with schematic EEG and status timeline. Pause, replay, speed, captions, step mode for reduced motion, schematic label. |
 | 5 | Working patient encounter | Done | History (free text and topic chips), exam maneuvers, orders with realistic turnaround, actions, ranked differential, submission, interpretation step, debrief, AI tutor after submission. |

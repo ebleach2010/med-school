@@ -8,6 +8,9 @@ import { EventItem } from "./Encounter";
 import { gradeToAttempts } from "../lib/caseAttempts";
 import { ErrorNote } from "../components/Bits";
 import { ReviewBadge } from "../components/Provenance";
+import { FocusShell, useFocusProgress, useFocusScroll } from "../components/FocusShell";
+import { Icon } from "../components/Icon";
+import { useNavigate } from "react-router-dom";
 
 type Kind = "history" | "exam" | "investigation";
 
@@ -32,6 +35,7 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
   const [dx, setDx] = useState("");
   const [busy, setBusy] = useState(false);
   const [played, setPlayed] = useState(0);
+  const scrollTop = useFocusScroll();
   const [seen, setSeen] = useState<string[]>(() => {
     try {
       return JSON.parse(sessionStorage.getItem("nt-speed-seen") ?? "[]");
@@ -104,99 +108,140 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
     }
   };
 
+  const used = v?.requestsUsed ?? 0;
+  const limit = v?.requestLimit ?? 2;
+  const done = v?.status === "submitted";
+  useFocusProgress(count ? (played + (done ? 0 : used / (limit + 1))) / count : (used + (done ? 1 : 0)) / (limit + 1), count ? `${Math.min(played + (done ? 0 : 1), count)}/${count}` : `Case ${played + (done ? 0 : 1)}`);
+
   if (error && !v) return <ErrorNote error={error} />;
   if (!v) return <p className="muted">Loading a case...</p>;
-  const used = v.requestsUsed;
-  const limit = v.requestLimit ?? 2;
-  const done = v.status === "submitted";
   const pickedInv = kind === "investigation" && pick ? INVESTIGATIONS.find((i) => i.id === pick) : undefined;
+  const dxScore = v.grade?.dimensions.diagnosis.score ?? 0;
+  const tone = dxScore >= 0.8 ? "good" : dxScore > 0 ? "partial" : "bad";
 
   return (
-    <div className="stack">
-      <div className="row between">
-        <span className="row">
-          <strong>{v.case.label}</strong>
-          <ReviewBadge provenance={v.case.provenance} status={v.case.review} />
+    <div>
+      <div className="row between nowrap" style={{ marginBottom: 8 }}>
+        <span className="focus-label" style={{ margin: 0 }}>
+          Speed round
         </span>
-        <span className="badge blue" aria-live="polite">
-          Requests: {used} of {limit}
+        <span className="row nowrap small" style={{ gap: 6, fontWeight: 800, color: "var(--text-3)" }} aria-live="polite" aria-label={`${limit - used} of ${limit} requests left`}>
+          {Array.from({ length: limit }, (_, k) => (
+            <span key={k} style={{ width: 12, height: 12, borderRadius: 6, background: k < limit - used ? "var(--amber)" : "var(--surface-3)" }} />
+          ))}
+          {limit - used} left
         </span>
       </div>
-      <div className="timeline">
-        {v.events.map((e, i) => (
-          <EventItem key={i} e={e} />
-        ))}
+      <div className="card tight">
+        <div className="row between" style={{ marginBottom: 8 }}>
+          <strong>{v.case.label}</strong>
+          <ReviewBadge provenance={v.case.provenance} status={v.case.review} />
+        </div>
+        <div className="timeline">
+          {v.events.map((e, i) => (
+            <EventItem key={i} e={e} />
+          ))}
+        </div>
       </div>
       <ErrorNote error={error} />
 
-      {!done && (
-        <>
-          {used < limit ? (
-            <div className="card stack">
-              <div className="tabs" role="tablist" style={{ marginBottom: 0 }}>
-                {(["history", "exam", "investigation"] as Kind[]).map((k) => (
-                  <button key={k} role="tab" aria-selected={kind === k} onClick={() => { setKind(k); setPick(null); setQ(""); }}>
-                    {k === "history" ? "History" : k === "exam" ? "Exam" : "Investigation"}
-                  </button>
-                ))}
-              </div>
-              <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" aria-label="Search requests" />
-              <div style={{ maxHeight: 220, overflow: "auto" }} role="listbox" aria-label="Requests">
-                {options.map((o) => (
-                  <button key={o.id} role="option" aria-selected={pick === o.id} className={`option ${pick === o.id ? "selected" : ""}`} onClick={() => setPick(o.id)}>
-                    <span>
-                      <strong>{o.name}</strong>
-                      <span className="tiny muted" style={{ display: "block" }}>{o.detail}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {pick && (
-                <div className="notice">
-                  <strong>This request:</strong> {requestName(kind, pick)}. <strong>Cost: 1 request</strong>
-                  {pickedInv?.bundle?.length ? ` (bundle counts as one: ${pickedInv.bundle.join(", ")})` : ""}. {limit - used - 1} left after this.
-                </div>
-              )}
-              <button className="btn primary" disabled={!pick || busy} onClick={request}>
-                Use request
+      {!done && used < limit && (
+        <div className="section">
+          <h2 className="q" style={{ margin: "0 0 10px" }}>
+            What one thing do you want to know?
+          </h2>
+          <div className="seg block" role="tablist" aria-label="Request type" style={{ marginBottom: 8 }}>
+            {(["history", "exam", "investigation"] as Kind[]).map((k) => (
+              <button key={k} role="tab" aria-selected={kind === k} onClick={() => { setKind(k); setPick(null); setQ(""); }}>
+                {k === "history" ? "History" : k === "exam" ? "Exam" : "Test"}
               </button>
-            </div>
-          ) : (
-            <p className="small muted">Both requests used. Make your call.</p>
-          )}
-          <div className="card stack">
-            <label className="field" htmlFor="speed-dx">Diagnosis</label>
-            <input id="speed-dx" className="input" value={dx} onChange={(e) => setDx(e.target.value)} onKeyDown={(e) => e.key === "Enter" && dx.trim() && submit(false)} placeholder="Your diagnosis" />
-            <div className="row">
-              <button className="btn primary" disabled={!dx.trim() || busy} onClick={() => submit(false)}>
-                Submit
-              </button>
-              <button className="btn ghost" disabled={busy} onClick={() => submit(true)}>
-                Skip and show answer
-              </button>
-            </div>
+            ))}
           </div>
-        </>
+          <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" aria-label="Search requests" />
+          <div className="list" style={{ maxHeight: 260, overflow: "auto", marginTop: 8 }} role="listbox" aria-label="Requests">
+            {options.map((o) => (
+              <button key={o.id} role="option" aria-selected={pick === o.id} className={`list-row ${pick === o.id ? "current" : ""}`} style={{ minHeight: 48, padding: "8px 12px" }} onClick={() => setPick(o.id)}>
+                <div className="grow">
+                  <div className="title small">{o.name}</div>
+                  <div className="sub">{o.detail}</div>
+                </div>
+                {pick === o.id && (
+                  <span style={{ color: "var(--blue)" }}>
+                    <Icon name="check" size={18} />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          {pick && (
+            <div className="row nowrap" style={{ marginTop: 10 }}>
+              <div className="grow small muted">
+                {requestName(kind, pick)}
+                {pickedInv?.bundle?.length ? ` (bundle counts as one: ${pickedInv.bundle.join(", ")})` : ""}
+              </div>
+              <button className="btn primary small" disabled={busy} onClick={request}>
+                Ask (1 request)
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {done && v.grade && (
-        <div className={`feedback ${v.grade.dimensions.diagnosis.score >= 0.8 ? "good" : v.grade.dimensions.diagnosis.score > 0 ? "partial" : "bad"}`} aria-live="polite">
-          <strong>{v.grade.dimensions.diagnosis.summary}</strong> <span>{v.grade.debrief.diagnosisLabel}</span>
+        <div className="explain-box">
+          <h3>Why</h3>
           {v.grade.dimensions.diagnosis.details.slice(0, 1).map((d, i) => (
-            <p key={i} className="small" style={{ margin: "4px 0" }}>{d}</p>
+            <p key={i}>{d}</p>
           ))}
-          <p className="small" style={{ margin: "4px 0" }}>{v.grade.debrief.speedExplanation}</p>
-          {v.grade.debrief.highYield && <p className="small" style={{ margin: 0 }}><span className="muted">Highest-yield requests:</span> {v.grade.debrief.highYield.map(anyName).join(", ")}</p>}
-          <div className="row" style={{ marginTop: 8 }}>
-            {count && played >= count ? (
-              <button className="btn primary" onClick={onNext} autoFocus>
-                Continue
+          <p>{v.grade.debrief.speedExplanation}</p>
+          {v.grade.debrief.highYield && (
+            <p className="small" style={{ margin: 0 }}>
+              <span className="faint">Highest-yield requests:</span> {v.grade.debrief.highYield.map(anyName).join(", ")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {!done && (
+        <div className="check-bar">
+          <div className="check-inner">
+            {used >= limit && <div className="small faint">Both requests used. Make your call.</div>}
+            <div className="check-row">
+              <input id="speed-dx" className="input" style={{ flex: 2 }} value={dx} onChange={(e) => setDx(e.target.value)} onKeyDown={(e) => e.key === "Enter" && dx.trim() && submit(false)} placeholder="Your diagnosis" aria-label="Your diagnosis" />
+              <button className="btn green" disabled={!dx.trim() || busy} onClick={() => submit(false)}>
+                Check
               </button>
-            ) : (
-              <button className="btn primary" onClick={() => void next()} autoFocus>
-                Next case
-              </button>
-            )}
+            </div>
+            <button className="linkish small" style={{ alignSelf: "center" }} disabled={busy} onClick={() => submit(true)}>
+              Skip and show the answer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {done && v.grade && (
+        <div className={`check-bar ${tone}`} aria-live="polite">
+          <div className="check-inner">
+            <div className="verdict">
+              <span className="vi">
+                <Icon name={tone === "good" ? "check" : "x"} />
+              </span>
+              <div className="grow">
+                <strong>{v.grade.dimensions.diagnosis.summary}</strong>
+                <div className="vt">{v.grade.debrief.diagnosisLabel}</div>
+              </div>
+            </div>
+            <div className="check-row">
+              {count && played >= count ? (
+                <button className={`btn lg ${tone === "good" ? "green" : tone === "partial" ? "primary" : "red"}`} onClick={onNext} autoFocus>
+                  Continue
+                </button>
+              ) : (
+                <button className={`btn lg ${tone === "good" ? "green" : tone === "partial" ? "primary" : "red"}`} onClick={() => { scrollTop(); void next(); }} autoFocus>
+                  Next case
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -205,12 +250,11 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
 }
 
 export function Speed() {
+  const nav = useNavigate();
   useEffect(() => setResume("/speed", "Speed round"), []);
   return (
-    <div className="stack">
-      <h1>Two-question speed round</h1>
-      <p className="small muted">Two requests, then commit. No hints until you answer. Bundled panels count as one request.</p>
-      <SpeedRunner />
-    </div>
+    <FocusShell closeTo="/">
+      <SpeedRunner onNext={() => nav("/")} />
+    </FocusShell>
   );
 }

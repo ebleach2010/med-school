@@ -1,12 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useLearner, update } from "../lib/store";
-import { MODULES, LESSONS, MODULE_BY_ID } from "../lib/content";
+import { MODULES, LESSONS } from "../lib/content";
 import { recommendNext } from "../../shared/recommend";
 import { dueEntries } from "../../shared/scheduler";
-import { bySkill } from "../../shared/mastery";
-import { now } from "../../shared/clock";
-import { SKILLS, SKILL_LABELS } from "../../shared/types";
-import { Bar, Stars, StatusBadge } from "../components/Bits";
+import { now, dayKey, DAY_MS } from "../../shared/clock";
+import { Icon } from "../components/Icon";
 
 export function Disclaimer({ compact = false }: { compact?: boolean }) {
   return (
@@ -16,125 +14,142 @@ export function Disclaimer({ compact = false }: { compact?: boolean }) {
   );
 }
 
+const LENGTHS: { m: 3 | 5 | 10 | 20 | 0; label: string }[] = [
+  { m: 3, label: "3 min" },
+  { m: 5, label: "5" },
+  { m: 10, label: "10" },
+  { m: 20, label: "20" },
+  { m: 0, label: "Open" },
+];
+
 export function Today() {
   const s = useLearner();
   const nav = useNavigate();
   const t = now();
   const rec = recommendNext(MODULES, LESSONS, s, t);
-  const due = dueEntries(s.reviews, t);
-  const skills = bySkill(s.attempts, t);
-  const recentStars = [...s.stars].sort((a, b) => b.earnedAt - a.earnedAt).slice(0, 4);
-  const lengths: (3 | 5 | 10 | 20 | 0)[] = [3, 5, 10, 20, 0];
+  const due = dueEntries(s.reviews, t).length;
+  const resume = s.resume && s.resume.route !== rec.route ? s.resume : null;
+
+  // Monday-first week strip, like most habit trackers.
+  const today = new Date(t);
+  const mondayOffset = (today.getDay() + 6) % 7;
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const ts = t + (i - mondayOffset) * DAY_MS;
+    const k = dayKey(ts);
+    return { k, d: "MTWTFSS"[i], on: (s.activity[k]?.items ?? 0) > 0, today: i === mondayOffset };
+  });
 
   return (
-    <div className="stack">
+    <div>
       {!s.settings.noticeAcknowledged && (
-        <div className="notice row between" role="note">
-          <Disclaimer />
-          <button className="btn small" onClick={() => update((x) => ({ ...x, settings: { ...x.settings, noticeAcknowledged: true } }))}>
+        <div className="callout" role="note" style={{ marginTop: 8 }}>
+          <span className="ico sm gray">
+            <Icon name="info" />
+          </span>
+          <div className="grow">
+            <Disclaimer compact />
+          </div>
+          <button className="linkish small" onClick={() => update((x) => ({ ...x, settings: { ...x.settings, noticeAcknowledged: true } }))}>
             Got it
           </button>
         </div>
       )}
 
-      <div className="grid two">
-        {s.resume && s.resume.route !== rec.route && (
-          <div className="card accent">
-            <div className="small muted">Continue where you stopped</div>
-            <h2>{s.resume.label}</h2>
-            <Link className="btn primary" to={s.resume.route}>
-              Continue
-            </Link>
-          </div>
-        )}
-        <div className="card teal">
-          <div className="small muted">Recommended next</div>
-          <h2>{rec.title}</h2>
-          <p className="small">{rec.why}</p>
-          <div className="row">
-            <Link className="btn primary" to={rec.route}>
-              Start ({rec.minutes} min)
-            </Link>
-          </div>
+      <div className="hero" style={{ marginTop: 12 }}>
+        <div className="eyebrow">{rec.kind === "placement" ? "Start here" : "Up next"}</div>
+        <h2>{rec.title}</h2>
+        <p>{rec.why}</p>
+        <div className="row between">
+          <span className="meta">
+            <Icon name="clock" size={16} /> {rec.minutes} min
+          </span>
+          <Link className="btn" to={rec.route}>
+            {rec.kind === "placement" && s.placement ? "Resume" : "Start"}
+          </Link>
         </div>
       </div>
 
-      <div className="card">
-        <div className="row between">
-          <h2 style={{ margin: 0 }}>Study session</h2>
-          <span className="small muted">Breaks are fine. Progress saves after every answer.</span>
+      {resume && (
+        <div className="list" style={{ marginTop: 10 }}>
+          <Link to={resume.route} className="list-row">
+            <span className="ico sm">
+              <Icon name="play" />
+            </span>
+            <div className="grow">
+              <div className="sub" style={{ marginTop: 0 }}>Pick up where you stopped</div>
+              <div className="title">{resume.label}</div>
+            </div>
+            <span className="chev">
+              <Icon name="chevron" />
+            </span>
+          </Link>
         </div>
-        <div className="row" style={{ marginTop: 8 }} role="group" aria-label="Session length">
-          {lengths.map((m) => (
-            <button key={m} className={`chip ${s.settings.sessionMinutes === m ? "selected" : ""}`} aria-pressed={s.settings.sessionMinutes === m} onClick={() => update((x) => ({ ...x, settings: { ...x.settings, sessionMinutes: m } }))}>
-              {m ? `${m} min` : "Unrestricted"}
-            </button>
-          ))}
-          <button className="btn primary" onClick={() => nav("/session")}>
-            Start session
+      )}
+
+      <div className="section-title">
+        <h2>Practice</h2>
+      </div>
+      <div className="tiles">
+        <Link to="/review" className="tile">
+          <span className="ico">
+            <Icon name="refresh" />
+          </span>
+          <span className="t">Review</span>
+          <span className="d">{due ? `${due} due now` : "All caught up"}</span>
+        </Link>
+        <Link to="/speed" className="tile">
+          <span className="ico amber">
+            <Icon name="bolt" />
+          </span>
+          <span className="t">Speed round</span>
+          <span className="d">Two asks, one diagnosis</span>
+        </Link>
+        <Link to="/cases" className="tile">
+          <span className="ico teal">
+            <Icon name="steth" />
+          </span>
+          <span className="t">Patient case</span>
+          <span className="d">Full workup</span>
+        </Link>
+      </div>
+
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="row between" style={{ marginBottom: 10 }}>
+          <div>
+            <h3 style={{ margin: 0 }}>Timed session</h3>
+            <div className="tiny faint">Reviews first, then your next lesson, then speed cases.</div>
+          </div>
+        </div>
+        <div className="row nowrap">
+          <div className="seg grow" role="group" aria-label="Session length in minutes" style={{ display: "flex" }}>
+            {LENGTHS.map(({ m, label }) => (
+              <button key={m} style={{ flex: 1, padding: 0 }} aria-pressed={s.settings.sessionMinutes === m} onClick={() => update((x) => ({ ...x, settings: { ...x.settings, sessionMinutes: m } }))}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <button className="btn primary small" style={{ minHeight: 40 }} onClick={() => nav("/session")}>
+            Go
           </button>
         </div>
       </div>
 
-      <div className="grid two">
-        <div className="card">
-          <div className="row between">
-            <h2 style={{ margin: 0 }}>Reviews due</h2>
-            <span className="badge blue">{due.length}</span>
-          </div>
-          <p className="small muted">{due.length ? "Short retrieval questions, interleaved across topics." : "Nothing due right now. Items come back as they start to fade."}</p>
-          <Link className={`btn ${due.length ? "primary" : ""}`} to="/review" aria-disabled={!due.length}>
-            {due.length ? "Review now" : "See schedule"}
+      <div className="card" style={{ marginTop: 12 }}>
+        <div className="row between" style={{ marginBottom: 8 }}>
+          <h3 style={{ margin: 0 }}>This week</h3>
+          <Link to="/progress" className="small" style={{ fontWeight: 700 }}>
+            Progress
           </Link>
         </div>
-        <div className="card">
-          <h2>Quick practice</h2>
-          <div className="row">
-            <Link className="btn" to="/speed">
-              Two-question speed round
-            </Link>
-            <Link className="btn" to="/cases">
-              Patient encounter
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="row between">
-          <h2 style={{ margin: 0 }}>Current mastery</h2>
-          <Link to="/progress" className="small">
-            Details and evidence
-          </Link>
-        </div>
-        <div className="stack" style={{ marginTop: 8 }}>
-          {SKILLS.map((k) => (
-            <div key={k}>
-              <div className="row between small">
-                <span>{SKILL_LABELS[k]}</span>
-                <StatusBadge status={skills[k].status} />
-              </div>
-              <Bar value={skills[k].status === "unassessed" ? 0 : skills[k].mean} label={`${SKILL_LABELS[k]} estimate`} tone={skills[k].status === "demonstrated" ? "green" : "teal"} />
+        <div className="week" aria-label={`Studied on ${week.filter((w) => w.on).length} of 7 days this week`}>
+          {week.map((w) => (
+            <div key={w.k}>
+              <div className="d">{w.d}</div>
+              <div className={`c ${w.on ? "on" : ""} ${w.today ? "today" : ""}`}>{w.on ? <Icon name="flame" /> : null}</div>
             </div>
           ))}
         </div>
       </div>
-
-      {recentStars.length > 0 && (
-        <div className="card">
-          <h2>Recent stars</h2>
-          {recentStars.map((st) => (
-            <div key={`${st.moduleId}-${st.star}`} className="row between small" style={{ padding: "4px 0" }}>
-              <Link to={`/learn/${st.moduleId}`}>{MODULE_BY_ID.get(st.moduleId)?.title}</Link>
-              <span className="row">
-                <Stars stars={s.stars.filter((x) => x.moduleId === st.moduleId)} />
-                <span className="muted">{st.how}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-      <Disclaimer compact />
     </div>
   );
 }

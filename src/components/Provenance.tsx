@@ -33,17 +33,16 @@ export function ProvenanceLine({ meta }: { meta: ContentMeta }) {
   const r = effectiveReview(meta, overrides);
   const sources = meta.sources.map((id) => SOURCE_BY_ID.get(id)).filter(Boolean);
   return (
-    <div className="small" style={{ marginTop: 8 }}>
-      <div className="row">
-        <ReviewBadge provenance={meta.provenance} status={r.status} />
-        {r.reviewer && <span className="muted">by {r.reviewer}, {r.date}</span>}
-        <span className="muted">Sources checked {meta.lastVerified}</span>
-        <button className="btn small ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-          {sources.length ? `${sources.length} source${sources.length > 1 ? "s" : ""}` : "No citation"}
-        </button>
-      </div>
+    <div className="prov">
+      <ReviewBadge provenance={meta.provenance} status={r.status} />
+      {r.reviewer && <span>by {r.reviewer}, {r.date}</span>}
+      <span>Checked {meta.lastVerified}</span>
+      <span aria-hidden="true">·</span>
+      <button className="linkish" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        {sources.length ? `${sources.length} source${sources.length > 1 ? "s" : ""}` : "No citation"}
+      </button>
       {open && (
-        <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+        <ul>
           {sources.map((s) => (
             <li key={s!.id}>
               <a href={s!.url} target="_blank" rel="noreferrer">
