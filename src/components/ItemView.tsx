@@ -132,7 +132,7 @@ export function ItemView({
     const r: ItemResponse | null = confidence === "idk" ? { kind: "idk" } : response();
     if (!r) return;
     const grade = gradeItem(item, r);
-    const attempt = recordAttempt({ item, grade, context, confidence, durationMs: now() - started.current, transfer: item.difficulty >= 2 });
+    const attempt = recordAttempt({ item, grade, context, confidence, durationMs: now() - started.current, transfer: item.difficulty >= 2, generated: item.meta.generated });
     setResult({ attempt, grade });
   };
 

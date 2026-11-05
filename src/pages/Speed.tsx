@@ -10,7 +10,7 @@ import { ErrorNote } from "../components/Bits";
 import { ReviewBadge } from "../components/Provenance";
 import { FocusShell, useFocusProgress, useFocusScroll } from "../components/FocusShell";
 import { Icon } from "../components/Icon";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type Kind = "history" | "exam" | "investigation";
 
@@ -25,7 +25,7 @@ export function anyName(id: string): string {
 }
 
 /** One speed case at a time. Used by the Speed page and by timed sessions. */
-export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: number }) {
+export function SpeedRunner({ onNext, count, firstCaseId }: { onNext?: () => void; count?: number; firstCaseId?: string }) {
   const s = useLearner();
   const [v, setV] = useState<EncounterView | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,13 +44,13 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
     }
   });
 
-  const next = async () => {
+  const next = async (caseId?: string) => {
     setError(null);
     setPick(null);
     setDx("");
     setQ("");
     try {
-      const r = await api<EncounterView & { caseId: string }>("/api/speed/next", { method: "POST", json: { exclude: seen.slice(-15), profileId: s.profileId } });
+      const r = await api<EncounterView & { caseId: string }>("/api/speed/next", { method: "POST", json: { exclude: seen.slice(-15), profileId: s.profileId, caseId } });
       setV(r);
       const ns = [...seen, r.caseId];
       setSeen(ns);
@@ -65,7 +65,7 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
   };
 
   useEffect(() => {
-    void next();
+    void next(firstCaseId);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const options = useMemo(() => {
@@ -98,7 +98,7 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
     try {
       const r = await api<EncounterView>(`/api/encounters/${v.id}/speed-submit`, { method: "POST", json: { diagnosis: dx, skip } });
       setV({ ...r, caseId: v.caseId });
-      if (r.grade && !skip) for (const a of gradeToAttempts(v.caseId ?? v.id, r.grade, "speed")) recordAttempt(a);
+      if (r.grade && !skip) for (const a of gradeToAttempts(v.caseId ?? v.id, r.grade, "speed")) recordAttempt({ ...a, generated: v.case.generated });
       update((x) => ({ ...x, encounters: { ...x.encounters, [v.id]: { caseLabel: v.case.label, mode: "speed", startedAt: now(), submitted: true } } }));
       setPlayed((p) => p + 1);
     } catch (e) {
@@ -135,7 +135,7 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
       <div className="card tight">
         <div className="row between" style={{ marginBottom: 8 }}>
           <strong>{v.case.label}</strong>
-          <ReviewBadge provenance={v.case.provenance} status={v.case.review} />
+          <ReviewBadge provenance={v.case.provenance} status={v.case.review} generated={v.case.generated} />
         </div>
         <div className="timeline">
           {v.events.map((e, i) => (
@@ -251,10 +251,11 @@ export function SpeedRunner({ onNext, count }: { onNext?: () => void; count?: nu
 
 export function Speed() {
   const nav = useNavigate();
+  const [params] = useSearchParams();
   useEffect(() => setResume("/speed", "Speed round"), []);
   return (
     <FocusShell closeTo="/">
-      <SpeedRunner onNext={() => nav("/")} />
+      <SpeedRunner onNext={() => nav("/")} firstCaseId={params.get("case") ?? undefined} />
     </FocusShell>
   );
 }

@@ -9,7 +9,13 @@ export function effectiveReview(meta: Pick<ContentMeta, "id" | "version" | "revi
   return { status: meta.review };
 }
 
-export function ReviewBadge({ provenance, status }: { provenance: P; status: ReviewState }) {
+export function ReviewBadge({ provenance, status, generated }: { provenance: P; status: ReviewState; generated?: boolean }) {
+  if (generated)
+    return (
+      <span className="badge amber" title="Written by AI just now for practice. Nobody has checked it, and it does not count toward stars or mastery.">
+        Generated, not reviewed
+      </span>
+    );
   if (provenance === "synthetic")
     return (
       <span className="badge teal" title="Simulated teaching example, not a real patient">
@@ -34,9 +40,9 @@ export function ProvenanceLine({ meta }: { meta: ContentMeta }) {
   const sources = meta.sources.map((id) => SOURCE_BY_ID.get(id)).filter(Boolean);
   return (
     <div className="prov">
-      <ReviewBadge provenance={meta.provenance} status={r.status} />
+      <ReviewBadge provenance={meta.provenance} status={r.status} generated={meta.generated} />
       {r.reviewer && <span>by {r.reviewer}, {r.date}</span>}
-      <span>Checked {meta.lastVerified}</span>
+      {meta.generated ? <span>Practice only: not counted toward stars or mastery</span> : <span>Checked {meta.lastVerified}</span>}
       <span aria-hidden="true">·</span>
       <button className="linkish" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         {sources.length ? `${sources.length} source${sources.length > 1 ? "s" : ""}` : "No citation"}

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, conten
 CREATE TABLE IF NOT EXISTS proposals (id TEXT PRIMARY KEY, kind TEXT NOT NULL, target_id TEXT, payload TEXT NOT NULL, evidence TEXT NOT NULL, status TEXT NOT NULL, origin TEXT NOT NULL, created_at INTEGER NOT NULL, decided_at INTEGER, reviewer TEXT, note TEXT);
 CREATE TABLE IF NOT EXISTS ai_usage (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, role TEXT NOT NULL, provider TEXT NOT NULL, model TEXT NOT NULL, input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL, cost_usd REAL NOT NULL, session_id TEXT, ok INTEGER NOT NULL, error TEXT);
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS practice_cases (id TEXT PRIMARY KEY, payload TEXT NOT NULL, created_at INTEGER NOT NULL);
 `;
 
 export function openDb(file?: string): DB {

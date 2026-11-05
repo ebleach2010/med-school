@@ -37,6 +37,16 @@ Status as of 2026-10-25. "Done" means implemented and covered by an automated te
 | Medical claims expose sources and review status | Done | Provenance line on lessons, items, reference entries, modules; coverage tab |
 | Mobile and keyboard | Done | `npm run smoke` at 375 px; keyboard reachability; number keys for MCQ |
 
+## Generated practice (added 2026-11-05)
+
+| Item | Status | Notes |
+|---|---|---|
+| Generated questions on any module | Done | `shared/generate.ts`, `content/cases/generation.ts`; per-question checks; targeted at weakest abilities |
+| Generated cases (workup, emergency, speed) | Done | Same validator as authored cases plus a dialogue leak probe; one repair round |
+| Hosted page via the viewer's Claude account | Done, not run live | Exercised with a stand-in for the `sample` capability; real calls inside claude.ai not yet observed |
+| Self-hosted via API key | Done, not run live | Tested with a mock provider |
+| Kept out of stars and mastery | Done | `Attempt.generated`; covered by tests |
+
 ## Partial or not done
 
 - **Live AI calls are untested against a real provider.** No key was available while building. The Anthropic adapter compiles against the official SDK types and follows current documentation (streaming, structured output via `messages.parse`, server-side refusal fallback), and all AI paths are tested with a mock provider. Test with a real key before relying on it.

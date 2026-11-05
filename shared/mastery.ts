@@ -53,7 +53,8 @@ export function attemptWeight(a: Attempt, priorSameItem: number, priorSameFamily
 }
 
 export function estimate(attempts: Attempt[], nowTs: number): MasteryEstimate {
-  const sorted = [...attempts].sort((a, b) => a.ts - b.ts);
+  // Generated practice is unreviewed, so it is never mastery evidence.
+  const sorted = attempts.filter((a) => !a.generated).sort((a, b) => a.ts - b.ts);
   let alpha = 1;
   let beta = 1;
   const seenItems = new Map<string, number>();
@@ -89,7 +90,7 @@ export function estimate(attempts: Attempt[], nowTs: number): MasteryEstimate {
 
   let status: MasteryStatus;
   let why: string;
-  if (!attempts.length) {
+  if (!sorted.length) {
     status = "unassessed";
     why = "No evidence yet.";
   } else if (mean >= 0.75 && mean - sd >= 0.6 && independent >= 3 && presentations.size >= 2) {
@@ -157,7 +158,7 @@ export function byModule(attempts: Attempt[], moduleId: string, nowTs: number): 
 export function errorPatterns(attempts: Attempt[]): { tag: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const a of attempts) {
-    if (a.score >= 0.8) continue;
+    if (a.score >= 0.8 || a.generated) continue;
     const tag = a.selfReport === "slip" ? "slip" : a.selfReport === "mixed-terms" ? "terminology" : a.tag ?? "knowledge-gap";
     counts.set(tag, (counts.get(tag) ?? 0) + 1);
   }

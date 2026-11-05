@@ -64,6 +64,7 @@ export interface EncounterView {
     provenance: "source-grounded" | "synthetic" | "adapted-published";
     review: "reviewed" | "pending" | "changes-requested";
     adaptation?: { source: string; license: string; altered: string[] };
+    generated?: boolean;
     hasVisits: boolean;
   };
   events: EncEvent[];

@@ -14,6 +14,8 @@ import { LESSON_BY_ID } from "../../content/lessons";
 import type { StreamHandlers } from "../lib/api";
 import { hostCapability, type SampleFn } from "../lib/platform";
 import { cloudLoadProgress, cloudSaveProgress } from "./cloud";
+import { generateQuestions, generateCase, GenerationError, type AskJson } from "../../content/cases/generation";
+import type { SkillId } from "../../shared/types";
 
 interface StoredEncounter {
   state: E.EncounterState;
@@ -46,10 +48,44 @@ class HttpError extends Error {
   }
 }
 
+// Cases generated on request for practice, kept in this browser.
+const PRACTICE_KEY = "nt-practice-cases";
+const practice = new Map<string, CaseDef>();
+try {
+  for (const c of JSON.parse(localStorage.getItem(PRACTICE_KEY) ?? "[]") as CaseDef[]) practice.set(c.id, { ...c, generated: true });
+} catch {
+  // Browser storage unavailable: generated cases last for this visit only.
+}
+function savePractice(c: CaseDef) {
+  practice.set(c.id, c);
+  try {
+    localStorage.setItem(PRACTICE_KEY, JSON.stringify([...practice.values()].slice(-30)));
+  } catch {
+    // ignore
+  }
+}
+const caseById = (id: string) => CASE_BY_ID.get(id) ?? practice.get(id);
+
 let samplePromise: Promise<SampleFn | null> | null = null;
 function sample(): Promise<SampleFn | null> {
   samplePromise ??= hostCapability<SampleFn>("sample");
   return samplePromise;
+}
+
+/** Map a `sample` rejection to an HTTP-style error the pages already know how to show. */
+function sampleError(e: unknown): HttpError {
+  const code = (e as { code?: string })?.code ?? "";
+  const copy: Record<string, [number, string]> = {
+    not_granted: [403, "Claude was not allowed for this page, so nothing was generated. You can allow it from the page's permissions."],
+    sampling_disabled: [403, "Claude is not available for this account."],
+    rate_limited: [429, "You have hit a usage limit for now. Try again later."],
+    session_expired: [401, "Sign in to claude.ai again, then retry."],
+    invalid_json: [502, "Claude's answer was not in the expected format. Try again."],
+    refused: [502, "Claude declined to write this one. Try a different module."],
+    cancelled: [499, "Cancelled."],
+  };
+  const [status, msg] = copy[code] ?? [502, "Generation failed. Try again."];
+  return new HttpError(status, msg, code || undefined);
 }
 
 function summary(c: CaseDef): CaseSummary {
@@ -65,13 +101,14 @@ function summary(c: CaseDef): CaseSummary {
     setting: c.presentation.setting,
     chiefComplaint: c.presentation.chiefComplaint,
     adaptationSource: c.adaptation?.source,
+    generated: c.generated,
   };
 }
 
 function get(id: string): { enc: StoredEncounter; cs: CaseDef } {
   const enc = encounters.get(id);
   if (!enc) throw new HttpError(404, "This encounter is no longer available on this device.");
-  const cs = CASE_BY_ID.get(enc.state.caseId);
+  const cs = caseById(enc.state.caseId);
   if (!cs) throw new HttpError(404, "Case not found.");
   return { enc, cs };
 }
@@ -134,7 +171,7 @@ export async function localApi(method: string, path: string, rawBody: unknown): 
 
   if (method === "GET" && p === "/api/health") return { ok: true, time: Date.now() };
   if (method === "GET" && p === "/api/reviews") return {};
-  if (method === "GET" && p === "/api/cases") return CASES.map(summary);
+  if (method === "GET" && p === "/api/cases") return [...CASES, ...[...practice.values()].reverse()].map(summary);
   if (method === "GET" && p === "/api/coverage") return coverage();
   if (method === "GET" && (p === "/api/reference/approved-antibodies" || p === "/api/proposals")) return [];
   if (method === "GET" && p === "/api/ai/status") return aiStatus();
@@ -148,7 +185,7 @@ export async function localApi(method: string, path: string, rawBody: unknown): 
   }
 
   if (method === "POST" && p === "/api/encounters") {
-    const cs = CASE_BY_ID.get(String(body.caseId));
+    const cs = caseById(String(body.caseId));
     if (!cs) throw new HttpError(404, "Case not found.");
     const mode = String(body.mode) as EncounterMode;
     if (!cs.modes.includes(mode)) throw new HttpError(400, "This case does not support that mode.");
@@ -159,13 +196,42 @@ export async function localApi(method: string, path: string, rawBody: unknown): 
 
   if (method === "POST" && p === "/api/speed/next") {
     const exclude = (body.exclude as string[] | undefined) ?? [];
+    // Generated speed cases are played when asked for by id, not mixed into the random pool.
+    const asked = body.caseId ? caseById(String(body.caseId)) : undefined;
+    if (body.caseId && !(asked?.modes.includes("speed") && asked.speed)) throw new HttpError(404, "Speed case not found.");
     const pool = CASES.filter((x) => x.modes.includes("speed") && x.speed);
     const fresh = pool.filter((x) => !exclude.includes(x.id));
     const from = fresh.length ? fresh : pool;
-    const pick = from[Math.floor(Math.random() * from.length)];
+    const pick = asked ?? from[Math.floor(Math.random() * from.length)];
     const enc: StoredEncounter = { state: E.newEncounter(crypto.randomUUID(), pick, "speed", Date.now()) };
     save(enc);
     return view(enc, pick);
+  }
+
+  if (method === "POST" && (p === "/api/generate/questions" || p === "/api/generate/case")) {
+    const smp = await sample();
+    if (!smp) throw new HttpError(409, "Generating practice needs this page open on claude.ai while you are signed in.", "missing-key");
+    const ask: AskJson = async (prompt, kind) => {
+      try {
+        return await smp.json(prompt, { modelTier: kind === "case" ? "complex" : "default", cache: false });
+      } catch (e) {
+        throw sampleError(e);
+      }
+    };
+    try {
+      if (p === "/api/generate/questions") {
+        return await generateQuestions(ask, { moduleId: String(body.moduleId), count: Number(body.count ?? 5), focusSkills: (body.focusSkills as SkillId[] | undefined) ?? [], avoid: (body.avoid as string[] | undefined) ?? [] });
+      }
+      const mode = String(body.mode) as "full" | "emergency" | "speed";
+      if (!["full", "emergency", "speed"].includes(mode)) throw new HttpError(400, "Unknown mode.");
+      const avoid = [...practice.values()].slice(-8).map((x) => x.presentation.chiefComplaint);
+      const cs = await generateCase(ask, { moduleId: String(body.moduleId), mode, avoid });
+      savePractice(cs);
+      return summary(cs);
+    } catch (e) {
+      if (e instanceof GenerationError) throw new HttpError(422, e.message);
+      throw e;
+    }
   }
 
   if (m) {

@@ -98,9 +98,11 @@ function HostedAI() {
         <span className={`badge ${ai?.mode === "live" ? "green" : "gray"}`}>{ai?.mode === "live" ? "Available" : "Not available here"}</span>
       </div>
       <p className="small muted">
-        On this hosted page the AI tutor and natural patient phrasing use your own Claude account, with no API key. The first use asks your permission and draws on your Claude usage. Everything else (lessons, rule-based patients, grading, review) works without it.
+        No API key needed here. On this hosted page, AI runs on your own Claude account: newly written practice questions, new patient cases on any topic, the AI tutor, and natural patient phrasing. The first use asks your permission and draws on your Claude usage.
       </p>
-      <p className="small muted">API keys, model choice, and the review workspace are part of the self-hosted version of the app.</p>
+      <p className="small muted">
+        There is deliberately no box for an API key on this page. It has no server, so a key would sit in your browser where any script on the page could read it. To use your own key instead, run the self-hosted app; its Settings has an AI provider section that keeps the key on the server.
+      </p>
     </section>
   );
 }
@@ -167,7 +169,7 @@ function AISettings() {
         <span className={`badge ${ai.mode === "live" ? "green" : "gray"}`}>{ai.mode === "live" ? "Live" : ai.mode === "disabled" ? "Turned off" : "Demo mode (no key)"}</span>
       </div>
       <p className="small muted">
-        Optional. Without a key the app runs fully in demo mode: rule-based patient dialogue, prewritten explanations, and rule-based grading. With a key you get natural patient dialogue, a streaming tutor, semantic answer checking, and AI-drafted content for review. Keys are stored only on the server and are never sent back to the browser.
+        Optional. Without a key the app runs fully in demo mode: rule-based patient dialogue, prewritten explanations, and rule-based grading. With a key you get newly written practice questions and patient cases on any topic, natural patient dialogue, a streaming tutor, semantic answer checking, and AI-drafted content for review. Keys are stored only on the server and are never sent back to the browser.
       </p>
       <ErrorNote error={error} />
       <label className="row">

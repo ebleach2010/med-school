@@ -150,7 +150,8 @@ export class AIService {
     this.checkLimits(sessionId, s);
     const model = this.modelFor(role, s);
     try {
-      const r = await p.json({ system, messages, model, maxTokens: ROLE_MAX_TOKENS[role], effort: ROLE_EFFORT[role], signal, timeoutMs: s.timeoutMs, maxRetries: s.maxRetries, schema, schemaName });
+      // Drafting a whole case is long structured output: give it at least five minutes.
+      const r = await p.json({ system, messages, model, maxTokens: ROLE_MAX_TOKENS[role], effort: ROLE_EFFORT[role], signal, timeoutMs: role === "author" ? Math.max(s.timeoutMs, 300000) : s.timeoutMs, maxRetries: s.maxRetries, schema, schemaName });
       this.record(role, p.id, r.model, r.usage, sessionId, true);
       return r.data;
     } catch (e) {

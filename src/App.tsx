@@ -19,6 +19,7 @@ import { Settings } from "./pages/Settings";
 import { Admin } from "./pages/Admin";
 import { Session } from "./pages/Session";
 import { Animations } from "./pages/Animations";
+import { Practice } from "./pages/Practice";
 import { Icon, type IconName } from "./components/Icon";
 import { streakDays } from "../shared/learner";
 import { now } from "../shared/clock";
@@ -116,6 +117,8 @@ export function App() {
           <Route path="/reference/antibody/:id" element={<AntibodyDetail />} />
           <Route path="/reference/investigation/:id" element={<InvestigationDetail />} />
           <Route path="/animations" element={<Animations />} />
+          <Route path="/practice" element={<Practice />} />
+          <Route path="/practice/:moduleId" element={<Practice />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />

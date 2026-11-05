@@ -53,6 +53,8 @@ export interface ContentMeta {
   /** ISO date sources were last checked against this content. */
   lastVerified: string;
   changelog?: { version: number; date: string; note: string }[];
+  /** Written by AI on request for practice (procedural), never reviewed. */
+  generated?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -490,6 +492,8 @@ export interface CaseDef {
   provenance: Provenance;
   review: ReviewState;
   sources: string[];
+  /** Generated on request for practice; not reviewed and not counted toward stars or mastery. */
+  generated?: boolean;
   adaptation?: { source: string; license: string; altered: string[] };
   presentation: {
     age: number;
@@ -557,6 +561,7 @@ export interface CaseSummary {
   setting: string;
   chiefComplaint: string;
   adaptationSource?: string;
+  generated?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -569,7 +574,7 @@ export interface Attempt {
   id: string;
   itemId: string;
   itemVersion: number;
-  context: "placement" | "lesson" | "review" | "challenge" | "case" | "speed";
+  context: "placement" | "lesson" | "review" | "challenge" | "case" | "speed" | "practice";
   ts: number;
   score: number;
   correct: boolean;
@@ -588,6 +593,8 @@ export interface Attempt {
   /** For case attempts: separate dimension scores. */
   dimensions?: Partial<Record<"diagnosis" | "reasoning" | "actions" | "investigations" | "interpretation" | "localization", number>>;
   transfer?: boolean;
+  /** From generated (unreviewed) practice: logged as activity, excluded from stars and mastery. */
+  generated?: boolean;
 }
 
 export interface ReviewEntry {

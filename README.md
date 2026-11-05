@@ -14,7 +14,8 @@ A hosted copy runs as a web page on claude.ai: https://claude.ai/artifact/NRVkCc
 The hosted copy is the standalone build (`npm run build:standalone`). It runs without the app server:
 - The encounter engine runs in the browser, so case answer keys ship with the page instead of staying on a server.
 - Progress saves in the browser and to your Claude account, so it follows you across devices when you're signed in.
-- The AI tutor and natural patient phrasing use your own Claude account (no API key); the first use asks permission.
+- AI runs on your own Claude account, with no API key: newly written practice questions, new patient cases on any topic, the AI tutor, and natural patient phrasing. The first use asks permission and draws on your Claude usage.
+- There is no API key field on the hosted page on purpose. With no server, a key would sit in the browser where any script on the page could read it.
 - The review workspace and API-key settings need the self-hosted version.
 
 To self-host instead, `npm run build && npm start` serves the full app with a web app manifest and icons, so its URL can be added to a home screen as an app too.
@@ -74,6 +75,9 @@ Without a key, the app runs in demo mode. Patients answer by rules from authored
 - a streaming tutor that you can cancel
 - an AI check of whether an unrecognized answer is equivalent to an accepted one
 - AI-drafted proposals for review
+- generated practice: new multiple-choice questions on any module (aimed at your weakest abilities) and new patient cases (workup, emergency, or speed round)
+
+**Generated practice is checked, labeled, and kept out of your record.** Every generated question must have exactly one correct answer and well-formed options. Every generated case must pass the same consistency checks as authored cases: valid ids, answer key matching its own label, no investigation in two lists, and no patient answer to any standard question naming the diagnosis. A failing case gets one repair attempt with the checker's findings, then is discarded. Generated items are labeled "Generated, not reviewed" and never count toward stars, mastery, review scheduling, or test-outs.
 
 To add a key, use **Settings > AI provider**, or set `ANTHROPIC_API_KEY` in the server environment (see `.env.example`). Keys are stored in `data/secrets.json` with mode 0600. The browser only ever sees a masked form, and log output redacts keys. The default model is `claude-opus-5-5`; a faster model can be set for patient dialogue. Each role has its own prompt and only the information it needs. The patient never sees exam or test results, and the tutor sees the case answer only after you submit. Learner text is wrapped and handled as untrusted data. Hidden reasoning is never stored.
 

@@ -10,12 +10,14 @@ import { Stars, StatusBadge } from "../components/Bits";
 import { ProvenanceLine } from "../components/Provenance";
 import { Icon, Ring } from "../components/Icon";
 import { moduleProgress, pathLine } from "./Learn";
+import { useAIStatus } from "../lib/hooks";
 
 const STAR_LABELS = ["Understand and recognize", "Apply to a new case", "Remember it days later"];
 
 export function ModulePage() {
   const { moduleId } = useParams();
   const s = useLearner();
+  const ai = useAIStatus();
   const m = MODULE_BY_ID.get(moduleId ?? "");
   if (!m) return <p>Module not found.</p>;
   const t = now();
@@ -55,7 +57,13 @@ export function ModulePage() {
           </span>
           <div className="grow">Coming soon. The scope below is listed so the course map is honest about what is not written yet. Related material may appear in cases and the glossary.</div>
         </div>
-      ) : (
+      ) : null}
+      {m.status === "planned" && ai?.mode === "live" && (
+        <Link className="btn block" style={{ marginTop: 10 }} to={`/practice/${m.id}`}>
+          <Icon name="sparkle" /> Practice with new questions
+        </Link>
+      )}
+      {m.status !== "planned" && (
         <div className="stack-sm">
           {nextLesson ? (
             <Link className="btn primary block lg" to={`/lesson/${nextLesson.id}`}>
@@ -67,6 +75,11 @@ export function ModulePage() {
                 Practice on a patient case
               </Link>
             )
+          )}
+          {ai?.mode === "live" && (
+            <Link className="btn block" to={`/practice/${m.id}`}>
+              <Icon name="sparkle" /> Practice with new questions
+            </Link>
           )}
           {challengeAvailable && !testedOut && (
             <Link className="btn block" to={`/challenge/${m.id}`}>

@@ -290,6 +290,7 @@ export function publicView(c: CaseDef, s: EncounterState) {
       provenance: c.provenance,
       review: c.review,
       adaptation: c.adaptation,
+      generated: Boolean(c.generated),
       hasVisits: Boolean(c.visits?.length),
     },
     events: s.events,

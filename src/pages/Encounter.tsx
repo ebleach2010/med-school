@@ -104,7 +104,7 @@ export function Encounter() {
     if (!v?.grade || !id) return;
     const known = s.encounters[id];
     if (known?.submitted) return;
-    for (const input of gradeToAttempts(v.caseId ?? id, v.grade, v.mode)) recordAttempt(input);
+    for (const input of gradeToAttempts(v.caseId ?? id, v.grade, v.mode)) recordAttempt({ ...input, generated: v.case.generated });
     update((x) => ({ ...x, resume: null, encounters: { ...x.encounters, [id]: { ...(x.encounters[id] ?? { caseLabel: v.case.label, mode: v.mode, startedAt: Date.now() }), submitted: true } } }));
   }, [v?.grade]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -161,7 +161,7 @@ export function Encounter() {
   return (
     <FocusShell closeTo="/cases" closeLabel="Leave encounter (progress is kept)" top={header}>
       <div className="row small faint" style={{ gap: 6, marginBottom: 10 }}>
-        <ReviewBadge provenance={v.case.provenance} status={v.case.review} />
+        <ReviewBadge provenance={v.case.provenance} status={v.case.review} generated={v.case.generated} />
         <span>
           {v.case.age}-year-old {v.case.sex}, {v.case.setting}.
         </span>

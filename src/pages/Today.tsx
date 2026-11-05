@@ -5,6 +5,7 @@ import { recommendNext } from "../../shared/recommend";
 import { dueEntries } from "../../shared/scheduler";
 import { now, dayKey, DAY_MS } from "../../shared/clock";
 import { Icon } from "../components/Icon";
+import { useAIStatus } from "../lib/hooks";
 
 export function Disclaimer({ compact = false }: { compact?: boolean }) {
   return (
@@ -25,6 +26,7 @@ const LENGTHS: { m: 3 | 5 | 10 | 20 | 0; label: string }[] = [
 export function Today() {
   const s = useLearner();
   const nav = useNavigate();
+  const ai = useAIStatus();
   const t = now();
   const rec = recommendNext(MODULES, LESSONS, s, t);
   const due = dueEntries(s.reviews, t).length;
@@ -89,7 +91,7 @@ export function Today() {
       <div className="section-title">
         <h2>Practice</h2>
       </div>
-      <div className="tiles">
+      <div className={`tiles ${ai?.mode === "live" ? "four" : ""}`}>
         <Link to="/review" className="tile">
           <span className="ico">
             <Icon name="refresh" />
@@ -111,6 +113,15 @@ export function Today() {
           <span className="t">Patient case</span>
           <span className="d">Full workup</span>
         </Link>
+        {ai?.mode === "live" && (
+          <Link to="/practice" className="tile">
+            <span className="ico green">
+              <Icon name="sparkle" />
+            </span>
+            <span className="t">New questions</span>
+            <span className="d">Freshly written for you</span>
+          </Link>
+        )}
       </div>
 
       <div className="card" style={{ marginTop: 12 }}>

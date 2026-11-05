@@ -56,6 +56,8 @@ export interface AttemptInput {
   selfReport?: Attempt["selfReport"];
   transfer?: boolean;
   dimensions?: Attempt["dimensions"];
+  /** Generated (unreviewed) practice: kept out of stars and mastery. */
+  generated?: boolean;
 }
 
 export function makeAttempt(input: AttemptInput, nowTs: number, id: string): Attempt {
@@ -80,6 +82,7 @@ export function makeAttempt(input: AttemptInput, nowTs: number, id: string): Att
     keySummary: input.grade.keySummary,
     transfer: input.transfer ?? input.item.difficulty >= 2,
     dimensions: input.dimensions,
+    ...(input.generated ? { generated: true } : {}),
   };
 }
 
@@ -103,8 +106,10 @@ export function applyAttempt(state: LearnerState, attempt: Attempt, reviewable: 
 
   const attempts = [...state.attempts, attempt];
   let stars = state.stars;
-  for (const m of attempt.modules) {
-    const awards = evaluateStars(m, attempts, stars);
+  // Unreviewed generated practice never earns stars.
+  const counted = attempt.generated ? [] : attempts.filter((a) => !a.generated);
+  for (const m of attempt.generated ? [] : attempt.modules) {
+    const awards = evaluateStars(m, counted, stars);
     if (awards.length) stars = [...stars, ...awards];
   }
 

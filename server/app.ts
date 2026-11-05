@@ -22,6 +22,8 @@ import { RateLimiter } from "./ratelimit";
 import { log } from "./log";
 import * as E from "./encounter";
 import { gradeEncounter, type EncounterGrade } from "./caseGrading";
+import { generateQuestions, generateCase, GenerationError } from "../content/cases/generation";
+import { generatedQuestionsSchema } from "../shared/generate";
 
 export interface AppDeps {
   db: DB;
@@ -81,8 +83,21 @@ export function createApp(deps: AppDeps) {
     }
     return out;
   }
+  /** Cases generated on request for practice: playable, never reviewed. */
+  function practiceCases(): CaseDef[] {
+    const rows = db.prepare("SELECT payload FROM practice_cases ORDER BY created_at DESC LIMIT 50").all() as { payload: string }[];
+    const out: CaseDef[] = [];
+    for (const r of rows) {
+      const parsed = caseSchema.safeParse(JSON.parse(r.payload));
+      if (parsed.success) out.push({ ...(parsed.data as CaseDef), generated: true });
+    }
+    return out;
+  }
+  function allCases(): CaseDef[] {
+    return [...CASES, ...approvedGeneratedCases(), ...practiceCases()];
+  }
   function getCase(id: string): CaseDef | undefined {
-    return CASE_BY_ID.get(id) ?? approvedGeneratedCases().find((c) => c.id === id);
+    return CASE_BY_ID.get(id) ?? approvedGeneratedCases().find((c) => c.id === id) ?? practiceCases().find((c) => c.id === id);
   }
   function caseReview(c: CaseDef): CaseDef["review"] {
     const row = db.prepare("SELECT status, content_version FROM reviews WHERE content_id = ? ORDER BY ts DESC, id DESC LIMIT 1").get(`case:${c.id}`) as { status: CaseDef["review"]; content_version: number } | undefined;
@@ -100,6 +115,7 @@ export function createApp(deps: AppDeps) {
       sex: c.presentation.sex,
       setting: c.presentation.setting,
       chiefComplaint: c.presentation.chiefComplaint,
+      generated: c.generated,
       adaptationSource: c.adaptation?.source,
     };
   }
@@ -188,7 +204,7 @@ export function createApp(deps: AppDeps) {
   });
 
   // ------------------------------------------------------------------ cases
-  app.get("/api/cases", (c) => c.json([...CASES, ...approvedGeneratedCases()].map(summary)));
+  app.get("/api/cases", (c) => c.json(allCases().map(summary)));
 
   app.post("/api/encounters", async (c) => {
     const body = z.object({ caseId: z.string(), mode: z.enum(["full", "emergency", "speed", "longitudinal", "uncertainty"]), profileId: z.string().optional() }).parse(await c.req.json());
@@ -370,11 +386,14 @@ export function createApp(deps: AppDeps) {
 
   // ------------------------------------------------------------------ speed rounds
   app.post("/api/speed/next", async (c) => {
-    const body = z.object({ exclude: z.array(z.string()).max(200).default([]), profileId: z.string().optional() }).parse(await c.req.json().catch(() => ({})));
+    const body = z.object({ exclude: z.array(z.string()).max(200).default([]), profileId: z.string().optional(), caseId: z.string().optional() }).parse(await c.req.json().catch(() => ({})));
+    // Generated speed cases are played when asked for by id, not mixed into the random pool.
     const pool = [...CASES, ...approvedGeneratedCases()].filter((x) => x.modes.includes("speed") && x.speed);
-    if (!pool.length) return c.json({ error: "No speed cases available." }, 404);
+    const asked = body.caseId ? getCase(body.caseId) : undefined;
+    if (body.caseId && !(asked?.modes.includes("speed") && asked.speed)) return c.json({ error: "Speed case not found." }, 404);
+    if (!pool.length && !asked) return c.json({ error: "No speed cases available." }, 404);
     const fresh = pool.filter((x) => !body.exclude.includes(x.id));
-    const pick = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length ? fresh.length : pool.length))];
+    const pick = asked ?? (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length ? fresh.length : pool.length))];
     const enc: StoredEncounter = { state: E.newEncounter(randomUUID(), pick, "speed", now()) };
     save(enc, body.profileId);
     return c.json({ ...view(enc, pick), caseId: pick.id });
@@ -437,6 +456,38 @@ export function createApp(deps: AppDeps) {
     const gate = aiGate(c);
     if (gate) return gate;
     return c.json(await ai.test(sessionId(c)));
+  });
+
+  // ------------------------------------------------------------------ generated practice
+  const GEN_SYSTEM = "You write synthetic neurology teaching material for a learning app. Follow the user's instructions and output format exactly.";
+  const askJson = (c: Context) => (prompt: string, kind: "questions" | "case") =>
+    ai.json("author", sessionId(c), GEN_SYSTEM, [{ role: "user", content: prompt }], (kind === "case" ? caseSchema : generatedQuestionsSchema) as z.ZodType<unknown>, kind === "case" ? "practice_case" : "practice_questions");
+  const generationError = (c: Context, e: unknown) =>
+    e instanceof GenerationError ? c.json({ error: e.message, issues: e.problems.slice(0, 10) }, 422) : aiErrorResponse(c, e);
+
+  app.post("/api/generate/questions", async (c) => {
+    const gate = aiGate(c);
+    if (gate) return gate;
+    const body = z.object({ moduleId: z.string(), count: z.number().int().min(1).max(8).optional(), focusSkills: z.array(z.string()).max(9).optional(), avoid: z.array(z.string().max(300)).max(30).optional() }).parse(await c.req.json());
+    try {
+      return c.json(await generateQuestions(askJson(c), { ...body, focusSkills: body.focusSkills as never }));
+    } catch (e) {
+      return generationError(c, e);
+    }
+  });
+
+  app.post("/api/generate/case", async (c) => {
+    const gate = aiGate(c);
+    if (gate) return gate;
+    const body = z.object({ moduleId: z.string(), mode: z.enum(["full", "emergency", "speed"]), difficulty: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional() }).parse(await c.req.json());
+    try {
+      const avoid = practiceCases().slice(0, 8).map((x) => x.presentation.chiefComplaint);
+      const cs = await generateCase(askJson(c), { ...body, avoid });
+      db.prepare("INSERT INTO practice_cases (id, payload, created_at) VALUES (?, ?, ?)").run(cs.id, JSON.stringify(cs), now());
+      return c.json(summary(cs));
+    } catch (e) {
+      return generationError(c, e);
+    }
   });
 
   app.get("/api/ai/usage", (c) => {
