@@ -44,8 +44,13 @@ Planned modules are being written one file per module in `content/modules/` (gui
 | Batch | Modules | Status |
 |---|---|---|
 | 1 | f-terminology, f-cells, f-cranial-nerves-all, f-sensory-visual-vestibular, f-autonomic-pathways, x-symptoms-signs | Done |
+| 2 | x-mental-status, x-cn-exam, x-coordination-gait, x-coma | Done |
+| 3 | c-ich-sah, c-tia-secondary, c-cvt-dissection, c-headache, c-spinal-emergencies, c-ms, c-nmosd-mogad | Done |
+| 4 | c-encephalitis-viral, c-epilepsy-mimics, c-polyneuropathy-radiculopathy, c-myopathy-mnd, c-parkinsonism, c-dementia, c-vertigo-vision | Done |
+| 5 | c-toxic-nutritional, c-paraneoplastic, c-rpd, c-autonomic, c-sleep, c-neuro-oncology, c-neurocritical, c-fnd, c-pediatric, c-neuropsychiatry, a-atypical-overlap | Done |
+| 6 | x-motor-sensory-exam, a-multiple-dx, a-incidental, a-revise-escalate | In progress (restarted after a container restart) |
 
-Totals after batch 1: 16 complete modules, 33 planned, 26 lessons, 163 items, 214 glossary terms, 64 verified sources. All new content is an AI draft awaiting clinician review.
+Totals so far: 45 complete modules, 4 planned, 99 lessons, 473 items, 613 glossary terms, 187 verified sources. All new content is an AI draft awaiting clinician review; `docs/REVIEW_NOTES.md` lists what each author flagged, and `docs/proposed-sources.md` lists sources that could not be verified and are not cited.
 
 ## Generated practice (added 2026-11-05)
 
@@ -64,7 +69,6 @@ Totals after batch 1: 16 complete modules, 33 planned, 26 lessons, 163 items, 21
 - **No real images.** All figures are schematic and labeled as such. Licensed image support is not built.
 - **Human review: none yet.** Every lesson, item, reference entry, and case is an AI draft awaiting clinician review. The review workspace records approvals per content version.
 - **Source verification was done from search-result records**, not by opening each page. Each source says so; open the links once before relying on page numbers. One source (Safdieh 2019) has an open DOI question noted in its record.
-- **Most clinical domains are planned.** See `docs/COVERAGE.md`; the map shows them as planned.
 - **Hints:** attempts track hint use, but no hint feature exists yet, so the count stays at zero.
 - **Accounts:** cross-device continuity uses a sync code, not authenticated accounts.
 - **Encounter vocabulary gaps reported by case authors:** no venography, lactate, stool culture, PSA, prolactin, or DaT scan investigations; no B12 replacement, oral steroid, IV fluid, analgesia, antipsychotic, or chemoprophylaxis actions; ordering constraints ("antibiotics before CT, CT before LP") can only be expressed as deadlines.

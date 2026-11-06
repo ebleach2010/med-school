@@ -8,42 +8,42 @@ Review status below is the status recorded in the content files. Approvals made 
 
 | Content | Count | Reviewed | AI draft, awaiting review | Synthetic |
 |---|---|---|---|---|
-| Modules with content | 16 | 0 | 16 | 0 |
-| Lessons | 26 | 0 | 26 | 0 |
-| Assessment items | 163 | 0 | 163 | 0 |
+| Modules with content | 45 | 0 | 45 | 0 |
+| Lessons | 99 | 0 | 99 | 0 |
+| Assessment items | 473 | 0 | 473 | 0 |
 | Patient cases | 26 | 0 | 26 | 26 |
 | Investigations | 66 | 0 | 66 | 0 |
 | Antibody entries | 39 | 0 | 39 | 0 |
-| Glossary terms | 214 | | | |
-| Verified sources | 64 | | | |
+| Glossary terms | 613 | | | |
+| Verified sources | 187 | | | |
 
 ## Coverage matrix by domain
 
 | Domain | Complete | Partial | Planned | Lessons | Items | Full cases | Speed cases |
 |---|---|---|---|---|---|---|---|
 | Foundations | 8 | 0 | 0 | 17 | 94 | 1 | 3 |
-| Clinical examination | 1 | 0 | 5 | 2 | 7 | 0 | 0 |
-| Stroke and neurovascular | 1 | 0 | 3 | 1 | 10 | 1 | 2 |
-| Epilepsy, mimics, and status epilepticus | 1 | 0 | 1 | 1 | 8 | 2 | 0 |
-| Headache and facial pain | 0 | 0 | 1 | 0 | 0 | 0 | 2 |
+| Clinical examination | 5 | 0 | 1 | 12 | 50 | 0 | 0 |
+| Stroke and neurovascular | 4 | 0 | 0 | 8 | 38 | 1 | 2 |
+| Epilepsy, mimics, and status epilepticus | 2 | 0 | 0 | 4 | 18 | 2 | 0 |
+| Headache and facial pain | 1 | 0 | 0 | 3 | 11 | 0 | 2 |
 | Neuroimmunology and inflammatory disorders | 1 | 0 | 0 | 1 | 11 | 1 | 0 |
-| Demyelinating disease | 0 | 0 | 2 | 0 | 0 | 0 | 2 |
-| CNS and peripheral nervous system infections | 1 | 0 | 1 | 1 | 9 | 1 | 1 |
-| Neuromuscular disease | 1 | 0 | 1 | 1 | 13 | 1 | 2 |
-| Peripheral neuropathy and radiculopathy | 1 | 0 | 1 | 1 | 11 | 1 | 1 |
-| Movement disorders | 0 | 0 | 1 | 0 | 0 | 0 | 1 |
-| Cognitive and behavioral neurology | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Neurodegeneration and rapidly progressive dementia | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Autonomic disorders | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Neuro-ophthalmology and vestibular disorders | 0 | 0 | 1 | 0 | 1 | 0 | 1 |
-| Sleep neurology | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Neuro-oncology and paraneoplastic syndromes | 0 | 0 | 2 | 0 | 0 | 0 | 0 |
-| Toxic, nutritional, and metabolic disorders | 0 | 0 | 1 | 0 | 0 | 0 | 2 |
-| Trauma, spinal emergencies, and neurocritical care | 0 | 0 | 2 | 0 | 3 | 1 | 1 |
-| Functional neurological disorder | 0 | 0 | 1 | 0 | 1 | 0 | 1 |
-| Pediatric, genetic, and developmental neurology | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Neuropsychiatric presentations and medical mimics | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| Advanced reasoning | 1 | 0 | 4 | 1 | 11 | 1 | 0 |
+| Demyelinating disease | 2 | 0 | 0 | 5 | 19 | 0 | 2 |
+| CNS and peripheral nervous system infections | 2 | 0 | 0 | 4 | 19 | 1 | 1 |
+| Neuromuscular disease | 2 | 0 | 0 | 4 | 25 | 1 | 2 |
+| Peripheral neuropathy and radiculopathy | 2 | 0 | 0 | 4 | 23 | 1 | 1 |
+| Movement disorders | 1 | 0 | 0 | 3 | 12 | 0 | 1 |
+| Cognitive and behavioral neurology | 1 | 0 | 0 | 3 | 12 | 0 | 0 |
+| Neurodegeneration and rapidly progressive dementia | 1 | 0 | 0 | 2 | 7 | 0 | 0 |
+| Autonomic disorders | 1 | 0 | 0 | 2 | 12 | 0 | 0 |
+| Neuro-ophthalmology and vestibular disorders | 1 | 0 | 0 | 2 | 13 | 0 | 1 |
+| Sleep neurology | 1 | 0 | 0 | 2 | 12 | 0 | 0 |
+| Neuro-oncology and paraneoplastic syndromes | 2 | 0 | 0 | 4 | 21 | 0 | 0 |
+| Toxic, nutritional, and metabolic disorders | 1 | 0 | 0 | 3 | 12 | 0 | 2 |
+| Trauma, spinal emergencies, and neurocritical care | 2 | 0 | 0 | 6 | 26 | 1 | 1 |
+| Functional neurological disorder | 1 | 0 | 0 | 2 | 12 | 0 | 1 |
+| Pediatric, genetic, and developmental neurology | 1 | 0 | 0 | 3 | 13 | 0 | 0 |
+| Neuropsychiatric presentations and medical mimics | 1 | 0 | 0 | 2 | 8 | 0 | 0 |
+| Advanced reasoning | 2 | 0 | 3 | 3 | 21 | 1 | 0 |
 
 ## Modules
 
@@ -57,44 +57,44 @@ Review status below is the status recorded in the content files. Approvals made 
 | Cranial nerves I to XII | complete | 3 | 10 | 0 |
 | Sensory, visual, vestibular, and cerebellar pathways | complete | 3 | 14 | 0 |
 | Autonomic pathways | complete | 2 | 7 | 0 |
-| Mental status, cognition, and language | planned | 0 | 0 | 0 |
-| Cranial nerve examination | planned | 0 | 0 | 0 |
+| Mental status, cognition, and language | complete | 3 | 12 | 0 |
+| Cranial nerve examination | complete | 2 | 10 | 0 |
 | Strength, tone, reflexes, and sensory testing | planned | 0 | 0 | 0 |
-| Coordination, gait, and balance | planned | 0 | 0 | 0 |
-| Consciousness and coma | planned | 0 | 0 | 0 |
+| Coordination, gait, and balance | complete | 2 | 12 | 0 |
+| Consciousness and coma | complete | 3 | 9 | 0 |
 | Findings versus reported symptoms | complete | 2 | 7 | 0 |
 | Hyperacute ischemic stroke | complete | 1 | 10 | 1 |
-| Intracerebral and subarachnoid hemorrhage | planned | 0 | 0 | 1 |
-| TIA and secondary prevention | planned | 0 | 0 | 0 |
-| Venous thrombosis, dissection, and other neurovascular causes | planned | 0 | 0 | 1 |
+| Intracerebral and subarachnoid hemorrhage | complete | 2 | 9 | 1 |
+| TIA and secondary prevention | complete | 2 | 9 | 0 |
+| Venous thrombosis, dissection, and other neurovascular causes | complete | 3 | 10 | 1 |
 | Seizures and status epilepticus | complete | 1 | 8 | 2 |
-| Epilepsy classification, first seizure, and mimics | planned | 0 | 0 | 0 |
-| Headache red flags and primary headache | planned | 0 | 0 | 2 |
+| Epilepsy classification, first seizure, and mimics | complete | 3 | 10 | 0 |
+| Headache red flags and primary headache | complete | 3 | 11 | 2 |
 | Autoimmune encephalitis and antibody testing | complete | 1 | 11 | 1 |
-| Paraneoplastic neurological syndromes | planned | 0 | 0 | 0 |
-| Multiple sclerosis | planned | 0 | 0 | 1 |
-| NMOSD and MOGAD | planned | 0 | 0 | 1 |
+| Paraneoplastic neurological syndromes | complete | 2 | 9 | 0 |
+| Multiple sclerosis | complete | 3 | 10 | 1 |
+| NMOSD and MOGAD | complete | 2 | 9 | 1 |
 | Acute bacterial meningitis | complete | 1 | 8 | 1 |
-| Viral encephalitis and other CNS infections | planned | 0 | 2 | 1 |
+| Viral encephalitis and other CNS infections | complete | 3 | 12 | 1 |
 | Neuromuscular junction disorders | complete | 1 | 12 | 2 |
-| Myopathy and motor neuron disease | planned | 0 | 1 | 1 |
+| Myopathy and motor neuron disease | complete | 3 | 13 | 1 |
 | Guillain-Barre syndrome and demyelinating neuropathy | complete | 1 | 10 | 1 |
-| Polyneuropathy, mononeuropathy, and radiculopathy | planned | 0 | 1 | 1 |
-| Parkinsonism and hyperkinetic disorders | planned | 0 | 0 | 1 |
-| Cognitive and behavioral neurology | planned | 0 | 0 | 0 |
-| Rapidly progressive dementia | planned | 0 | 0 | 0 |
-| Autonomic disorders | planned | 0 | 0 | 0 |
-| Acute vertigo and vision loss | planned | 0 | 1 | 1 |
-| Sleep neurology | planned | 0 | 0 | 0 |
-| Neuro-oncology | planned | 0 | 0 | 0 |
-| Toxic, nutritional, and metabolic disorders | planned | 0 | 0 | 2 |
-| Spinal emergencies and neurotrauma | planned | 0 | 3 | 2 |
-| Raised intracranial pressure and neurocritical care | planned | 0 | 0 | 0 |
-| Functional neurological disorder | planned | 0 | 1 | 1 |
-| Pediatric, genetic, and developmental neurology | planned | 0 | 0 | 0 |
-| Neuropsychiatric presentations and medical mimics | planned | 0 | 0 | 0 |
+| Polyneuropathy, mononeuropathy, and radiculopathy | complete | 3 | 13 | 1 |
+| Parkinsonism and hyperkinetic disorders | complete | 3 | 12 | 1 |
+| Cognitive and behavioral neurology | complete | 3 | 12 | 0 |
+| Rapidly progressive dementia | complete | 2 | 7 | 0 |
+| Autonomic disorders | complete | 2 | 12 | 0 |
+| Acute vertigo and vision loss | complete | 2 | 13 | 1 |
+| Sleep neurology | complete | 2 | 12 | 0 |
+| Neuro-oncology | complete | 2 | 12 | 0 |
+| Toxic, nutritional, and metabolic disorders | complete | 3 | 12 | 2 |
+| Spinal emergencies and neurotrauma | complete | 3 | 14 | 2 |
+| Raised intracranial pressure and neurocritical care | complete | 3 | 12 | 0 |
+| Functional neurological disorder | complete | 2 | 12 | 1 |
+| Pediatric, genetic, and developmental neurology | complete | 3 | 13 | 0 |
+| Neuropsychiatric presentations and medical mimics | complete | 2 | 8 | 0 |
 | Probabilistic reasoning and test interpretation | complete | 1 | 11 | 1 |
-| Atypical and overlapping presentations | planned | 0 | 0 | 0 |
+| Atypical and overlapping presentations | complete | 2 | 10 | 0 |
 | Multiple simultaneous diagnoses | planned | 0 | 0 | 0 |
 | Incidental findings and discordant results | planned | 0 | 0 | 0 |
 | Revising a diagnosis and deciding to escalate | planned | 0 | 0 | 0 |
@@ -103,15 +103,15 @@ Review status below is the status recorded in the content files. Approvals made 
 
 | Ability | Items | Distinct presentations |
 |---|---|---|
-| Medical terminology | 19 | 19 |
-| Neuroanatomy and localization | 40 | 40 |
-| Mechanisms and pathophysiology | 23 | 23 |
-| History and examination | 15 | 15 |
-| Differential diagnosis | 11 | 11 |
-| Choosing investigations | 11 | 10 |
-| Interpreting results | 17 | 16 |
-| Emergency recognition and management | 15 | 15 |
-| Uncertainty and limits of evidence | 12 | 12 |
+| Medical terminology | 28 | 28 |
+| Neuroanatomy and localization | 71 | 71 |
+| Mechanisms and pathophysiology | 40 | 40 |
+| History and examination | 64 | 64 |
+| Differential diagnosis | 89 | 89 |
+| Choosing investigations | 56 | 55 |
+| Interpreting results | 45 | 44 |
+| Emergency recognition and management | 50 | 50 |
+| Uncertainty and limits of evidence | 30 | 30 |
 
 ## Encounter modes
 
