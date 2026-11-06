@@ -21,7 +21,7 @@ Study the finished modules first; match their depth, tone, and structure:
 ## Ids
 
 - Lessons: `l-<slug>` (for example `l-sah-thunderclap`). Items: `m-<module-slug>-<short>` (for example `m-ichsah-ct`). Terms: lowercase hyphenated, like the existing ones.
-- Before adding a term, search `content/glossary.ts`. If the id exists, use it; do not redefine it.
+- Before adding a term, search `content/glossary.ts` and the other files in `content/modules/`. If the id exists, use it; do not redefine it.
 - Mark glossary terms in text as `[[term-id|shown text]]`. Every id you use must exist in the main glossary or in your module's `terms`.
 
 ## Items
@@ -33,6 +33,7 @@ Study the finished modules first; match their depth, tone, and structure:
 - `select-tests`: categories `necessary`, `reasonable`, `unnecessary`, `harmful`, each with a one-line `why`. At least one necessary.
 - `order-priority`: `order` is an array of groups; steps in one group may come in any order.
 - `rationale` explains the mechanism, not just the answer.
+- Give every item's `meta` the registry sources that support it (at least the module's anchor source), not an empty list.
 
 ## Evidence and copy rules
 
