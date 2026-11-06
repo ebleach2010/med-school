@@ -112,3 +112,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - m-pns-definite grades limbic encephalitis with small cell lung cancer and no antibody as "probable"; the label rests on the author's knowledge of PNS-Care scoring (no point values taught). Intermediate-risk phenotype examples hedged but not confirmed against graus2021-pns.
 - EFNS screening intervals (repeat at 3 to 6 months, then every 6 months up to 4 years; 2 years for LEMS) predate the 2021 criteria.
 - Integration fix: the grader no longer treats neuropathy and neuronopathy (or myopathy and myelopathy, dysphagia and dysphasia) as typos of each other.
+
+## c-rpd
+- Prion infection control (special handling for brain, spinal cord, and eye instruments) rests on geschwind2016-rpd and hermann2021-scjd; WHO or CDC guidance would be better (see proposed sources).
+- Tension between "steroids can make a lymphoma biopsy nondiagnostic" and "do not delay immunotherapy"; check the framing. Immunotherapy item is LGI1-like and assumes Graus criteria are met. RT-QuIC called highly specific without figures; 14-3-3 and tau less specific; variant and genetic forms in one line each.

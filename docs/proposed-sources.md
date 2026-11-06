@@ -35,3 +35,19 @@ before adding it to `content/sources.ts`.
 `csf-cytology-flow`, `cxr`, `eeg-sleep-deprived`, `autonomic-testing`, `genetic-panel`,
 `muscle-biopsy`, `temporal-artery-biopsy`. For basic laboratory tests a general
 laboratory medicine reference (to be chosen by a reviewer) would be appropriate.
+
+## Wanted during the module build-out (2026-11-06), not yet verified
+
+These were sought while writing modules but could not be confirmed from the build environment, so they are not cited. Verify each before adding it to the registry.
+
+| Candidate | Module and use |
+|---|---|
+| Kim JS. Pure lateral medullary infarction: clinical-radiological correlation of 130 acute, consecutive patients. Brain. 2003;126:1864-1872 (DOI likely 10.1093/brain/awg169; PMID unconfirmed) | f-cranial-nerves-all: lateral medullary features |
+| A direct source that interferon beta, natalizumab, and fingolimod can worsen NMOSD | c-nmosd-mogad and c-ms: currently attributed to wingerchuk2015-nmosd and kumpfel2024-nemos without confirming wording |
+| Vilstrup H, et al. Hepatic encephalopathy in chronic liver disease: 2014 practice guideline by AASLD and EASL (two journal versions with conflicting identifiers) | c-toxic-nutritional: hepatic encephalopathy |
+| CDC diagnostic criteria for sporadic Creutzfeldt-Jakob disease (web page; title and date not confirmed) | c-rpd: diagnostic criteria |
+| WHO infection control guidelines for transmissible spongiform encephalopathies (WHO/CDS/CSR/APH/2000.3; stable URL not confirmed) | c-rpd: instrument precautions |
+| A guideline source for naloxone in undifferentiated coma | x-coma |
+| A dedicated source on fundoscopy and papilledema, and one on cover testing | x-cn-exam |
+| An HIV opportunistic infection guideline (NIH/CDC/HIVMA) for toxoplasmosis | c-encephalitis-viral |
+| McKeith 2017 DLB criteria and Wenning 2022 MSA criteria were deferred by c-parkinsonism to avoid duplicates; c-dementia added mckeith2017-dlb | c-parkinsonism: cite mckeith2017-dlb in a later revision |
