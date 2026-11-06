@@ -2,12 +2,13 @@
 // Checks cross-references, citations, answer-key self-consistency, case coherence,
 // and interface copy rules. Exits non-zero on any error.
 
-import { SOURCE_BY_ID } from "../content/sources";
+import { SOURCE_BY_ID, BASE_SOURCES } from "../content/sources";
 import { MODULES, MODULE_BY_ID } from "../content/curriculum";
 import { INVESTIGATION_IDS } from "../content/investigationIds";
 import { validateCase } from "../shared/caseValidate";
 import { gradeFreeText } from "../shared/text";
 import type { AssessmentItem, CaseDef, ContentMeta } from "../shared/types";
+import { BUILT_MODULES } from "../content/modules";
 
 const errors: string[] = [];
 const warnings: string[] = [];
@@ -92,6 +93,47 @@ async function main() {
   const markup = /\[\[([^|\]]+)\|/g;
   for (const blob of [JSON.stringify(lessons), JSON.stringify(items)]) {
     for (const m of blob.matchAll(markup)) if (glossary.length && !termIds.has(m[1])) errors.push(`glossary term "${m[1]}" referenced but not defined`);
+  }
+
+  // Written modules (content/modules): the bar every built-out module must meet.
+  {
+    const termOwners = new Map<string, string>();
+    for (const g of glossary) if (!BUILT_MODULES.some((b) => b.terms.includes(g))) termOwners.set(g.id, "main glossary");
+    const baseSourceIds = new Set<string>();
+    for (const b of BUILT_MODULES) {
+      const where = `module ${b.moduleId}`;
+      if (!MODULE_BY_ID.has(b.moduleId)) errors.push(`${where}: no curriculum entry with this id`);
+      const own = items.filter((it) => it.modules.includes(b.moduleId));
+      if (own.length < 6) errors.push(`${where}: needs at least 6 items, has ${own.length}`);
+      if (!own.some((it) => it.difficulty >= 2)) errors.push(`${where}: needs at least one difficulty 2 or 3 (transfer) item`);
+      if (b.module.challengeItems.length < 3) errors.push(`${where}: needs at least 3 challenge items`);
+      const ch = b.module.challengeItems.map((id) => items.find((it) => it.id === id)).filter((x) => !!x);
+      if (!ch.some((it) => it.difficulty >= 2)) errors.push(`${where}: challenge needs a difficulty 2 or 3 item, or nobody can pass it`);
+      if (!b.lessons.length || !b.module.lessons.length) errors.push(`${where}: no lessons`);
+      for (const lid of b.module.lessons) if (!b.lessons.some((l) => l.id === lid)) errors.push(`${where}: lesson ${lid} listed but not defined in the module file`);
+      for (const l of b.lessons) {
+        if (l.moduleId !== b.moduleId) errors.push(`${where}: lesson ${l.id} has moduleId ${l.moduleId}`);
+        if (!l.steps.some((st) => st.kind === "predict" || st.kind === "apply")) errors.push(`${where}: lesson ${l.id} has no question step`);
+        const last = l.steps[l.steps.length - 1];
+        if (last?.kind !== "summary") errors.push(`${where}: lesson ${l.id} must end with a summary step`);
+        if (!l.steps.some((st) => st.kind === "explain")) errors.push(`${where}: lesson ${l.id} has no explain step`);
+      }
+      for (const it of b.items) if (!it.modules.includes(b.moduleId)) warnings.push(`${where}: item ${it.id} is not tagged with its own module`);
+      for (const x of b.terms) {
+        const prev = termOwners.get(x.id);
+        if (prev) warnings.push(`${where}: term ${x.id} already defined by ${prev}; the earlier definition is used`);
+        else termOwners.set(x.id, b.moduleId);
+      }
+      for (const src of b.sources) {
+        if (BASE_SOURCES.some((x) => x.id === src.id)) errors.push(`${where}: source ${src.id} is already in the registry; cite it instead of adding it`);
+        if (baseSourceIds.has(src.id)) errors.push(`${where}: source ${src.id} is also added by another module`);
+        baseSourceIds.add(src.id);
+        if (!src.verified) errors.push(`${where}: source ${src.id} is not verified; put unverified candidates in docs/proposed-sources.md`);
+        if (!/^https:\/\//.test(src.url)) errors.push(`${where}: source ${src.id} needs an https URL`);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(src.lastVerified) || src.verificationNote.length < 20) errors.push(`${where}: source ${src.id} needs a verification date and note`);
+      }
+      scanDashes(where, b);
+    }
   }
 
   // Investigations

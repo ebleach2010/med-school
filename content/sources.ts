@@ -4,10 +4,11 @@
 // Generated from the 2026-10-25 verification pass, then maintained by hand.
 
 import type { Source } from "../shared/types";
+import { BUILT_MODULES } from "./modules";
 
 export const SOURCES_COVERAGE_DATE = "2026-10-25";
 
-export const SOURCES: Source[] = [
+export const BASE_SOURCES: Source[] = [
   {
     "id": "graus2016-ae",
     "kind": "consensus-criteria",
@@ -846,5 +847,18 @@ export const SOURCES: Source[] = [
     "verified": true
   }
 ];
+
+/** Registry plus sources added (and verified) by written modules. Duplicate ids keep the first. */
+export const SOURCES: Source[] = (() => {
+  const seen = new Set(BASE_SOURCES.map((x) => x.id));
+  const out = [...BASE_SOURCES];
+  for (const m of BUILT_MODULES)
+    for (const x of m.sources) {
+      if (seen.has(x.id)) continue;
+      seen.add(x.id);
+      out.push(x);
+    }
+  return out;
+})();
 
 export const SOURCE_BY_ID = new Map(SOURCES.map((s) => [s.id, s]));

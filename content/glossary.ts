@@ -3,6 +3,7 @@
 // pronunciation (stressed syllable in capitals) where useful, and a short clinical example.
 
 import type { Term } from "../shared/types";
+import { BUILT_MODULES } from "./modules";
 
 function t(
   id: string,
@@ -21,7 +22,7 @@ function t(
   return out;
 }
 
-export const GLOSSARY: Term[] = [
+const BASE_GLOSSARY: Term[] = [
   // ---------------------------------------------------------------- Motor system and localization
   t("umn", "Upper motor neuron", ["UMN"],
     "A nerve cell in the brain or brainstem that sends movement commands down to the nerve cells that directly control muscles.",
@@ -792,5 +793,18 @@ export const GLOSSARY: Term[] = [
     "Pronator drift of the left arm is a sign.",
     "x-symptoms-signs", ["symptom", "babinski-sign"]),
 ];
+
+/** Main glossary plus terms added by written modules. The first definition of an id wins. */
+export const GLOSSARY: Term[] = (() => {
+  const seen = new Set(BASE_GLOSSARY.map((x) => x.id));
+  const out = [...BASE_GLOSSARY];
+  for (const m of BUILT_MODULES)
+    for (const x of m.terms) {
+      if (seen.has(x.id)) continue;
+      seen.add(x.id);
+      out.push(x);
+    }
+  return out;
+})();
 
 export const TERM_BY_ID = new Map(GLOSSARY.map((term) => [term.id, term]));

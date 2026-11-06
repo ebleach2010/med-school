@@ -2,6 +2,8 @@
 // as planned in the app and are never presented as finished content.
 
 import type { ContentMeta, Domain, Module, Objective, SkillId } from "../shared/types";
+import { BUILT_MODULES } from "./modules";
+import { BUILD_DATE } from "./modules/types";
 
 const DATE = "2026-10-25";
 
@@ -57,7 +59,7 @@ function planned(id: string, title: string, domain: string, level: Module["level
   };
 }
 
-export const MODULES: Module[] = [
+const BASE_MODULES: Module[] = [
   // ---------------- Foundations ----------------
   {
     id: "f-localization",
@@ -320,5 +322,25 @@ export const MODULES: Module[] = [
   planned("a-incidental", "Incidental findings and discordant results", "advanced", "advanced", "Incidentalomas, discordant clinical and lab findings.", ["a-test-interpretation"], [["interpretation", "Weigh an incidental or discordant result."]]),
   planned("a-revise-escalate", "Revising a diagnosis and deciding to escalate", "advanced", "advanced", "When evidence supports escalation, observation, repeat testing, or consultation.", ["a-test-interpretation"], [["uncertainty", "Choose between escalation, observation, and repeat testing."]]),
 ];
+
+/** Written modules (content/modules) replace their planned entries and become complete. */
+export const MODULES: Module[] = BASE_MODULES.map((m) => {
+  const built = BUILT_MODULES.find((b) => b.moduleId === m.id);
+  if (!built) return m;
+  const b = built.module;
+  return {
+    ...m,
+    title: b.title ?? m.title,
+    summary: b.summary,
+    objectives: obj(m.id, b.objectives),
+    prerequisites: b.prerequisites ?? m.prerequisites,
+    lessons: b.lessons,
+    challengeItems: b.challengeItems,
+    skills: b.skills,
+    status: "complete" as const,
+    minutes: b.minutes,
+    meta: { ...meta(m.id, b.sources), lastVerified: BUILD_DATE },
+  };
+});
 
 export const MODULE_BY_ID = new Map(MODULES.map((m) => [m.id, m]));
