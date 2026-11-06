@@ -120,3 +120,8 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## c-autonomic
 - Parkinson disease and DLB grouped as central causes with a note that postganglionic sympathetic nerves also degenerate (spared in MSA). Heart rate response ratio taught in principle only.
 - Sweat item reads abnormal thermoregulatory sweat test with normal QSART as preganglionic. Features against MSA and "ganglionic AChR" wording against the papers. Fludrocortisone, midodrine, droxidopa, and a bedtime short-acting antihypertensive for supine hypertension named without doses. Initial orthostatic hypotension thresholds from freeman2011-oh.
+
+## c-sleep
+- MSLT at a principles level without cutoffs. m-sleep-narco-tests marks a stimulant started before testing as "harmful".
+- Sleep-related hypermotor epilepsy named from the ILAE hyperkinetic-onset category; no dedicated consensus paper cited. Most older adults with idiopathic RBD said to later develop a synucleinopathy, without rates.
+- winkelman2025-aasm-rls iron and augmentation recommendations and aasm2023-icsd3tr claims confirmed only from secondary summaries.
