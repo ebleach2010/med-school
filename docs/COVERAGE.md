@@ -8,21 +8,21 @@ Review status below is the status recorded in the content files. Approvals made 
 
 | Content | Count | Reviewed | AI draft, awaiting review | Synthetic |
 |---|---|---|---|---|
-| Modules with content | 11 | 0 | 11 | 0 |
-| Lessons | 12 | 0 | 12 | 0 |
-| Assessment items | 103 | 0 | 103 | 0 |
+| Modules with content | 16 | 0 | 16 | 0 |
+| Lessons | 26 | 0 | 26 | 0 |
+| Assessment items | 163 | 0 | 163 | 0 |
 | Patient cases | 26 | 0 | 26 | 26 |
 | Investigations | 66 | 0 | 66 | 0 |
 | Antibody entries | 39 | 0 | 39 | 0 |
-| Glossary terms | 125 | | | |
-| Verified sources | 59 | | | |
+| Glossary terms | 214 | | | |
+| Verified sources | 64 | | | |
 
 ## Coverage matrix by domain
 
 | Domain | Complete | Partial | Planned | Lessons | Items | Full cases | Speed cases |
 |---|---|---|---|---|---|---|---|
-| Foundations | 3 | 1 | 4 | 5 | 40 | 1 | 3 |
-| Clinical examination | 0 | 0 | 6 | 0 | 1 | 0 | 0 |
+| Foundations | 8 | 0 | 0 | 17 | 94 | 1 | 3 |
+| Clinical examination | 1 | 0 | 5 | 2 | 7 | 0 | 0 |
 | Stroke and neurovascular | 1 | 0 | 3 | 1 | 10 | 1 | 2 |
 | Epilepsy, mimics, and status epilepticus | 1 | 0 | 1 | 1 | 8 | 2 | 0 |
 | Headache and facial pain | 0 | 0 | 1 | 0 | 0 | 0 | 2 |
@@ -52,17 +52,17 @@ Review status below is the status recorded in the content files. Approvals made 
 | Localization and time course | complete | 3 | 21 | 1 |
 | Ocular motor nerves and diplopia | complete | 1 | 8 | 2 |
 | Cerebral circulation and vascular syndromes | complete | 1 | 8 | 1 |
-| Neurological terminology | partial | 0 | 7 | 0 |
-| Neurons, glia, synapses, and myelin | planned | 0 | 0 | 0 |
-| Cranial nerves I to XII | planned | 0 | 0 | 0 |
-| Sensory, visual, vestibular, and cerebellar pathways | planned | 0 | 0 | 0 |
-| Autonomic pathways | planned | 0 | 0 | 0 |
+| Neurological terminology | complete | 2 | 18 | 0 |
+| Neurons, glia, synapses, and myelin | complete | 2 | 12 | 0 |
+| Cranial nerves I to XII | complete | 3 | 10 | 0 |
+| Sensory, visual, vestibular, and cerebellar pathways | complete | 3 | 14 | 0 |
+| Autonomic pathways | complete | 2 | 7 | 0 |
 | Mental status, cognition, and language | planned | 0 | 0 | 0 |
 | Cranial nerve examination | planned | 0 | 0 | 0 |
 | Strength, tone, reflexes, and sensory testing | planned | 0 | 0 | 0 |
 | Coordination, gait, and balance | planned | 0 | 0 | 0 |
 | Consciousness and coma | planned | 0 | 0 | 0 |
-| Findings versus reported symptoms | planned | 0 | 1 | 0 |
+| Findings versus reported symptoms | complete | 2 | 7 | 0 |
 | Hyperacute ischemic stroke | complete | 1 | 10 | 1 |
 | Intracerebral and subarachnoid hemorrhage | planned | 0 | 0 | 1 |
 | TIA and secondary prevention | planned | 0 | 0 | 0 |
@@ -103,15 +103,15 @@ Review status below is the status recorded in the content files. Approvals made 
 
 | Ability | Items | Distinct presentations |
 |---|---|---|
-| Medical terminology | 8 | 8 |
-| Neuroanatomy and localization | 19 | 19 |
-| Mechanisms and pathophysiology | 11 | 11 |
-| History and examination | 6 | 6 |
-| Differential diagnosis | 9 | 9 |
-| Choosing investigations | 10 | 9 |
-| Interpreting results | 15 | 14 |
-| Emergency recognition and management | 14 | 14 |
-| Uncertainty and limits of evidence | 11 | 11 |
+| Medical terminology | 19 | 19 |
+| Neuroanatomy and localization | 40 | 40 |
+| Mechanisms and pathophysiology | 23 | 23 |
+| History and examination | 15 | 15 |
+| Differential diagnosis | 11 | 11 |
+| Choosing investigations | 11 | 10 |
+| Interpreting results | 17 | 16 |
+| Emergency recognition and management | 15 | 15 |
+| Uncertainty and limits of evidence | 12 | 12 |
 
 ## Encounter modes
 

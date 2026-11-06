@@ -8,7 +8,7 @@ Status as of 2026-10-25. "Done" means implemented and covered by an automated te
 |---|---|---|---|
 | 1 | Placement assessment | Done | 9-item screen, then adaptive branching by ability; resumable; "I don't know"; confidence on every answer; self-reported slip vs gap; report with strengths, test-out modules, gaps, needs-more-assessment, recommended start. |
 | 2 | Personalized curriculum map | Done | Prerequisite graph (topological) shown as a course outline: units in path order, per-module progress rings and stars, placement verdicts, remediation first, planned modules grouped under "Coming soon". |
-| 3 | Several complete lessons | Done | 12 lessons across 10 complete modules. Progressive disclosure with four explanation layers per concept and optional AI tutor. |
+| 3 | Several complete lessons | Done | See "Module build-out" below for current counts. Progressive disclosure with four explanation layers per concept and optional AI tutor. |
 | 4 | At least three animations | Done | Six: neuraxis lesion explorer, NMJ comparator, conduction explorer, vascular territory map with penumbra, eye movement simulator, seizure spread with schematic EEG and status timeline. Pause, replay, speed, captions, step mode for reduced motion, schematic label. |
 | 5 | Working patient encounter | Done | History (free text and topic chips), exam maneuvers, orders with realistic turnaround, actions, ranked differential, submission, interpretation step, debrief, AI tutor after submission. |
 | 6 | Two-question speed mode | Done | Counter, request cost shown before use, bundles count once, skip reveals explanation, limit enforced server-side. |
@@ -37,6 +37,16 @@ Status as of 2026-10-25. "Done" means implemented and covered by an automated te
 | Medical claims expose sources and review status | Done | Provenance line on lessons, items, reference entries, modules; coverage tab |
 | Mobile and keyboard | Done | `npm run smoke` at 375 px; keyboard reachability; number keys for MCQ |
 
+## Module build-out (started 2026-11-06)
+
+Planned modules are being written one file per module in `content/modules/` (guide: `docs/MODULE_AUTHORING.md`). The validator enforces at least 6 items, a passable test-out with a transfer item, lessons ending in a summary, and verified new sources.
+
+| Batch | Modules | Status |
+|---|---|---|
+| 1 | f-terminology, f-cells, f-cranial-nerves-all, f-sensory-visual-vestibular, f-autonomic-pathways, x-symptoms-signs | Done |
+
+Totals after batch 1: 16 complete modules, 33 planned, 26 lessons, 163 items, 214 glossary terms, 64 verified sources. All new content is an AI draft awaiting clinician review.
+
 ## Generated practice (added 2026-11-05)
 
 | Item | Status | Notes |
@@ -54,7 +64,6 @@ Status as of 2026-10-25. "Done" means implemented and covered by an automated te
 - **No real images.** All figures are schematic and labeled as such. Licensed image support is not built.
 - **Human review: none yet.** Every lesson, item, reference entry, and case is an AI draft awaiting clinician review. The review workspace records approvals per content version.
 - **Source verification was done from search-result records**, not by opening each page. Each source says so; open the links once before relying on page numbers. One source (Safdieh 2019) has an open DOI question noted in its record.
-- **Examination domain modules are planned only.** Exam technique is taught in context (maneuver descriptions in encounters) but the six exam modules have no lessons.
 - **Most clinical domains are planned.** See `docs/COVERAGE.md`; the map shows them as planned.
 - **Hints:** attempts track hint use, but no hint feature exists yet, so the count stays at zero.
 - **Accounts:** cross-device continuity uses a sync code, not authenticated accounts.
