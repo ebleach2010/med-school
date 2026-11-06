@@ -130,3 +130,11 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - Only numbers: trauma ICP threshold 22 mm Hg and CPP 60 to 70 mm Hg from carney2017-btf-tbi, checked against summaries and labeled trauma-specific. No temperature, CO2, or blood pressure thresholds for brain death testing.
 - From summaries of greer2023-bd-dnc, not full text: EEG not accepted as an ancillary test; ancillary tests only when the clinical evaluation cannot be completed; spinal reflexes can persist; donation request separate from telling the family.
 - Head of bed elevation, loosening neck collars, treating fever and seizures cite general teaching. m-neurocrit-herniation-order sequence (first-line measures before repeat CT and neurosurgical review, which run together).
+
+## c-fnd
+- "DSM-5-TR keeps the no-stressor rule" rests on espay2018-fnd, which describes DSM-5. Hip abductor sign mechanics from the Sonoo abstract. Functional facial spasm versus hemifacial spasm rests on one small study.
+- m-fnd-tests labels a deceptive saline "test" injection harmful. Physiotherapy wording on walking aids.
+
+## c-neuro-oncology
+- Steroids before biopsy when lymphoma is possible rests on schaff2018-pcnsl, attributed in search results; full text not read. Steroid and seizure prophylaxis wording in the brain metastasis guideline not seen directly.
+- WHO molecular criteria for glioblastoma (TERT, EGFR, chromosome 7 gain and 10 loss) from the WHO summary paper. Ring-tests item marks antiseizure medication after one tumor-related seizure as necessary. VTE anticoagulation wording with a brain tumor.
