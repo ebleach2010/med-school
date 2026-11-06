@@ -154,6 +154,19 @@ export function levenshtein(a: string, b: string): number {
   return d[a.length][b.length];
 }
 
+const OPPOSITE_PREFIXES: [string, string][] = [
+  ["hyper", "hypo"],
+  ["mono", "bi"],
+  ["uni", "bi"],
+  ["ipsi", "contra"],
+  ["intra", "extra"],
+  ["pre", "post"],
+  ["supra", "infra"],
+  ["hemi", "para"],
+  ["hemi", "quadri"],
+  ["para", "quadri"],
+];
+
 /** Token equality with typo tolerance proportional to word length. */
 export function tokenMatches(answerTok: string, patternTok: string): boolean {
   const a = canon(answerTok);
@@ -161,8 +174,11 @@ export function tokenMatches(answerTok: string, patternTok: string): boolean {
   if (a === p) return true;
   // Short tokens (gene names, abbreviations, numbers) must match exactly.
   if (p.length <= 3 || /\d/.test(p)) return false;
+  // Opposite prefixes are a meaning change, not a typo ("monocular" is not "binocular").
+  if (OPPOSITE_PREFIXES.some(([x, y]) => (a.startsWith(x) && p.startsWith(y)) || (a.startsWith(y) && p.startsWith(x)))) return false;
   const tol = p.length >= 9 ? 2 : p.length >= 5 ? 1 : 0;
-  if (tol > 0 && Math.abs(a.length - p.length) <= tol && levenshtein(a, p) <= tol) return true;
+  // Typos rarely change the first letter, and different words often differ only there.
+  if (tol > 0 && a[0] === p[0] && Math.abs(a.length - p.length) <= tol && levenshtein(a, p) <= tol) return true;
   // Suffix variants of long words ("angiogram" vs "angiography", "myasthenic" vs "myasthenia"),
   // without merging different words that share a stem ("meningitis" vs "meningioma").
   const shorter = Math.min(a.length, p.length);
