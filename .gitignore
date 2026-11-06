@@ -7,3 +7,6 @@ data/
 !.env.example
 coverage/
 dist-standalone/
+
+# Agent worktrees
+.claude/worktrees/
