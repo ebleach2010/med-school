@@ -74,3 +74,9 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - Steroid caution when lymphoma is possible: standard teaching, not confirmed in nice2023-ng234. No dexamethasone dose or blood pressure targets.
 - From darouiche2006-sea: avoid LP, empiric gram-negative cover, full triad in a minority. Antibiotics placed alongside MRI in a febrile patient with a deficit.
 - From lavy2009-ces: CES-I and CES-R and the quoted 43 percent false positive rate. Incomplete cord syndromes cite the curriculum only. ISNCSCI has been revised since 2011.
+
+## c-polyneuropathy-radiculopathy
+- m-pnr-upper-trunk places the lesion in the upper trunk because rhomboids and serratus anterior are normal; root avulsion earns partial credit.
+- First-line screen marks HbA1c, B12 with methylmalonic acid, and protein electrophoresis with immunofixation as necessary; TSH and nerve studies reasonable.
+- Metformin and low B12, the chemotherapy drug list, and mononeuritis multiplex blood tests are standard teaching without a specific source.
+- Grader limit: "mononeuritis multiplex, rule out polyarteritis" earns 0.6 because "rule out" reads as negation; changing that globally made diagnosis answers worse, so it was left as is.
