@@ -84,3 +84,8 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## c-encephalitis-viral
 - Toxoplasmosis advice (empiric treatment, biopsy if no response) is cited to the abscess review and the IDSA 2008 encephalitis guideline, not an HIV opportunistic infection guideline.
 - Repeat HSV PCR at 24 to 48 hours follows solomon2012-uk-enceph; IDSA may differ. Select-tests categories for VZV and enterovirus PCR and HIV testing. Cryptococcal drainage threshold from a perfect2010-idsa-crypto excerpt. No acyclovir doses.
+
+## c-myopathy-mnd
+- Breaking bad news (m-myomnd-news) is standard teaching cited only to feldman2022-als and the curriculum.
+- Multifocal motor neuropathy statements (IVIG response, steroids may worsen, anti-GM1) and the ALS mimic list rely on feldman2022-als, not confirmed against its text. Dystrophinopathy and rhabdomyolysis content has no specific source. Gold Coast criteria checked against summaries only.
+- Several PMIDs came from secondary listings (reference lists, catalogs, PubMed mirrors); each verification note says where.
