@@ -143,3 +143,8 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - Milestone red flag ages (walking by about 18 months, words by about 16 months, two-word phrases by about 24 months, hand preference before 12 months) are common teaching, not confirmed in lipkin2020-developmental-surveillance.
 - Early SMA treatment and newborn screening, and vigabatrin first-line for infantile spasms in TSC, rest on summaries (mercuri2018-sma-part1 covers diagnosis; treatment is in part 2). Infantile spasms described as "usually in the first year" with hypsarrhythmia as classic.
 - m-peds-febrile-lp CT-before-LP and "do not delay antibiotics" options cite the adult meningitis guideline beside the AAP guideline.
+
+## c-neuropsychiatry
+- Antipsychotic caution in catatonia and the NMS and malignant catatonia overlap: rogers2023-catatonia wording not confirmed. Red flag list from pollak2020-autoimmune-psychosis checked against summaries only.
+- Age thresholds ("after about 40 to 50") are teaching convention, not sourced. Antipsychotic intolerance in NMDA receptor encephalitis. Medication and substance causes rest on general sources.
+- m-neuropsych-nmdar is close to placement item p-immuno-nmdar-1 (differs by setting and asks for the next step).
