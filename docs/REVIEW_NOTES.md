@@ -156,3 +156,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## x-motor-sensory-exam
 - Chaddock maneuver, inverted supinator sign, and non-corticospinal causes of an extensor plantar (sleep, postictal, coma, hypoglycemia) rest on the curriculum source. Root assignments given as ranges; ISNCSCI key muscles noted in the lesson.
 - NINDS reflex grade wording against litvan1996-ninds-reflex-scale. Whether the cervical myelopathy picture in m-msx-cord-loc suits clerkship level. "L5-S1" earns 0.75 on m-msx-s1 because it contains S1.
+
+## a-multiple-dx
+- m-mdx-one-or-two: diabetic lumbosacral radiculoplexus neuropathy is a real alternative; the vignette points to L5. Check the plexopathy distractor feedback.
+- m-mdx-epilepsy-confusion: sodium 119 and "limited rate of correction" wording. Chronic subdural hematoma and degenerative cervical myelopathy claims rest on general teaching. m-mdx-document anticoagulation and levodopa plan wording. aberegg2024-hickam cited without volume or pages (online ahead of print).
