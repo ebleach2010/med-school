@@ -116,3 +116,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## c-rpd
 - Prion infection control (special handling for brain, spinal cord, and eye instruments) rests on geschwind2016-rpd and hermann2021-scjd; WHO or CDC guidance would be better (see proposed sources).
 - Tension between "steroids can make a lymphoma biopsy nondiagnostic" and "do not delay immunotherapy"; check the framing. Immunotherapy item is LGI1-like and assumes Graus criteria are met. RT-QuIC called highly specific without figures; 14-3-3 and tau less specific; variant and genetic forms in one line each.
+
+## c-autonomic
+- Parkinson disease and DLB grouped as central causes with a note that postganglionic sympathetic nerves also degenerate (spared in MSA). Heart rate response ratio taught in principle only.
+- Sweat item reads abnormal thermoregulatory sweat test with normal QSART as preganglionic. Features against MSA and "ganglionic AChR" wording against the papers. Fludrocortisone, midodrine, droxidopa, and a bedtime short-acting antihypertensive for supine hypertension named without doses. Initial orthostatic hypotension thresholds from freeman2011-oh.
