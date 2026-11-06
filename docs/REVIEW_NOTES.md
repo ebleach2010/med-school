@@ -56,3 +56,12 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## c-nmosd-mogad
 - Claims tied to kumpfel2024-nemos (early escalation to plasma exchange or immunoadsorption, preventive therapy after a first attack, MS drugs that can worsen NMOSD) are mainstream but were not read in the paper.
 - No MOG titer cutoffs taught; content/antibodies.ts states 1:100 for fixed assays, which should be checked against banwell2023-mogad. MOGAD supporting features written from knowledge of Banwell 2023, not its text.
+
+## c-headache
+- Giant cell arteritis wording ("biopsy within about two weeks of starting glucocorticoids", IV pulse when vision is threatened) rests on a summary of maz2021-acr-gca, not its text.
+- Preventive drug classes, "avoid opioids and barbiturates", and the triptan vascular contraindication are stated more broadly than the cited sources. ICHD-3 medication overuse day counts are quoted. SNNOOP10 older-age cutoff deliberately not given.
+
+## c-ms
+- The 2024 McDonald changes are described only in general terms; compare with montalban2025-mcdonald itself (not opened here).
+- "Some MS treatments can worsen NMOSD" attributed to wingerchuk2015-nmosd; anti-CD20 benefit in primary progressive MS; plasma exchange for steroid-refractory relapse; mimic list in m-ms-course.
+- Integration fix: "dissemination in space and oligoclonal bands" now earns 0.6 (bands can substitute for evidence of dissemination in time since 2017) instead of being marked a misconception.

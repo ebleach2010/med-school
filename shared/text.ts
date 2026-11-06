@@ -102,7 +102,19 @@ export function normalize(text: string): string {
     .trim();
 }
 
-export function tokenize(text: string): string[] {
+/** Marks a clause break (comma, semicolon, full stop) in answer tokens; negation stops there. */
+export const CLAUSE = "|";
+const CLAUSE_BREAKERS = new Set(["but", "however", "instead", "rather", "whereas"]);
+
+export function tokenize(text: string, keepClauses = false): string[] {
+  if (keepClauses) {
+    const out: string[] = [];
+    text.split(/[,;.:!?()]+/).forEach((clause, i) => {
+      if (i > 0) out.push(CLAUSE);
+      out.push(...tokenize(clause));
+    });
+    return out;
+  }
   const out: string[] = [];
   for (const raw of normalize(text).split(/\s+/)) {
     if (!raw) continue;
@@ -240,7 +252,13 @@ function findPhrase(tokens: string[], phrase: string, used: Set<number>): number
 function isNegatedAt(tokens: string[], positions: number[], part: string): boolean {
   if (tokenize(part).some((t) => NEGATORS.has(t))) return false;
   const first = Math.min(...positions);
-  return tokens.slice(Math.max(0, first - 3), first).some((t) => NEGATORS.has(t));
+  // Look back up to three tokens, but a negation does not reach across a clause break
+  // ("not migraine, cluster headache") or a contrast word ("not migraine but cluster").
+  for (let i = first - 1; i >= Math.max(0, first - 3); i--) {
+    if (tokens[i] === CLAUSE || CLAUSE_BREAKERS.has(tokens[i])) return false;
+    if (NEGATORS.has(tokens[i])) return true;
+  }
+  return false;
 }
 
 /**
@@ -250,7 +268,7 @@ function isNegatedAt(tokens: string[], positions: number[], part: string): boole
  * "no", "unlikely", "rule out") is treated as negated and does not count.
  */
 export function matchConcept(answer: string, concept: Concept, exclude: Set<number> = new Set()): MatchResult & { positions?: number[] } {
-  const tokens = tokenize(answer);
+  const tokens = tokenize(answer, true);
   let sawNegated = false;
   for (const pattern of concept.patterns) {
     const parts = pattern.split(/\s\+\s/);

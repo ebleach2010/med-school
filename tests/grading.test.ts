@@ -80,3 +80,14 @@ describe("typo tolerance does not merge opposite words", () => {
     for (const [a, b] of [["dipolpia", "diplopia"], ["menigitis", "meningitis"], ["myasthneia", "myasthenia"]]) expect(tokenMatches(a, b), `${a} vs ${b}`).toBe(true);
   });
 });
+
+describe("negation stays inside its clause", () => {
+  it("does not let a negated alternative cancel the answer that follows it", async () => {
+    const { gradeFreeText } = await import("../shared/text");
+    const key = { full: [{ id: "cluster", label: "Cluster headache", patterns: ["cluster headache"] }] };
+    expect(gradeFreeText("not migraine, cluster headache", key).score).toBe(1);
+    expect(gradeFreeText("not migraine but cluster headache", key).score).toBe(1);
+    expect(gradeFreeText("not cluster headache", key).score).toBe(0);
+    expect(gradeFreeText("unlikely to be cluster headache", key).score).toBe(0);
+  });
+});
