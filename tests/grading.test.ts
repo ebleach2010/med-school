@@ -89,5 +89,7 @@ describe("negation stays inside its clause", () => {
     expect(gradeFreeText("not migraine but cluster headache", key).score).toBe(1);
     expect(gradeFreeText("not cluster headache", key).score).toBe(0);
     expect(gradeFreeText("unlikely to be cluster headache", key).score).toBe(0);
+    expect(gradeFreeText("migraine rather than cluster headache", key).score).toBe(0);
+    expect(gradeFreeText("cluster headache rather than migraine", key).score).toBe(1);
   });
 });

@@ -80,3 +80,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - First-line screen marks HbA1c, B12 with methylmalonic acid, and protein electrophoresis with immunofixation as necessary; TSH and nerve studies reasonable.
 - Metformin and low B12, the chemotherapy drug list, and mononeuritis multiplex blood tests are standard teaching without a specific source.
 - Grader limit: "mononeuritis multiplex, rule out polyarteritis" earns 0.6 because "rule out" reads as negation; changing that globally made diagnosis answers worse, so it was left as is.
+
+## c-encephalitis-viral
+- Toxoplasmosis advice (empiric treatment, biopsy if no response) is cited to the abscess review and the IDSA 2008 encephalitis guideline, not an HIV opportunistic infection guideline.
+- Repeat HSV PCR at 24 to 48 hours follows solomon2012-uk-enceph; IDSA may differ. Select-tests categories for VZV and enterovirus PCR and HIV testing. Cryptococcal drainage threshold from a perfect2010-idsa-crypto excerpt. No acyclovir doses.

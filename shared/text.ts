@@ -255,6 +255,8 @@ function isNegatedAt(tokens: string[], positions: number[], part: string): boole
   // Look back up to three tokens, but a negation does not reach across a clause break
   // ("not migraine, cluster headache") or a contrast word ("not migraine but cluster").
   for (let i = first - 1; i >= Math.max(0, first - 3); i--) {
+    // "X rather than Y" and "X instead of Y" reject Y.
+    if ((tokens[i] === "than" && tokens[i - 1] === "rather") || (tokens[i] === "of" && tokens[i - 1] === "instead")) return true;
     if (tokens[i] === CLAUSE || CLAUSE_BREAKERS.has(tokens[i])) return false;
     if (NEGATORS.has(tokens[i])) return true;
   }
