@@ -179,6 +179,19 @@ const OPPOSITE_PREFIXES: [string, string][] = [
   ["para", "quadri"],
 ];
 
+const CONFUSABLE_PAIRS: [string, string][] = [
+  ["neuropathy", "neuronopathy"],
+  ["myopathy", "myelopathy"],
+  ["myositis", "myelitis"],
+  ["dysphagia", "dysphasia"],
+  ["dysphonia", "dysphasia"],
+  ["aphasia", "aphagia"],
+  ["ataxia", "apraxia"],
+  ["miosis", "mitosis"],
+  ["ptosis", "proptosis"],
+];
+const CONFUSABLE = new Set(CONFUSABLE_PAIRS.flatMap(([x, y]) => [`${canon(x)}|${canon(y)}`]));
+
 /** Token equality with typo tolerance proportional to word length. */
 export function tokenMatches(answerTok: string, patternTok: string): boolean {
   const a = canon(answerTok);
@@ -186,6 +199,8 @@ export function tokenMatches(answerTok: string, patternTok: string): boolean {
   if (a === p) return true;
   // Short tokens (gene names, abbreviations, numbers) must match exactly.
   if (p.length <= 3 || /\d/.test(p)) return false;
+  // Distinct medical words one or two letters apart are never typos of each other.
+  if (CONFUSABLE.has(`${a}|${p}`) || CONFUSABLE.has(`${p}|${a}`)) return false;
   // Opposite prefixes are a meaning change, not a typo ("monocular" is not "binocular").
   if (OPPOSITE_PREFIXES.some(([x, y]) => (a.startsWith(x) && p.startsWith(y)) || (a.startsWith(y) && p.startsWith(x)))) return false;
   const tol = p.length >= 9 ? 2 : p.length >= 5 ? 1 : 0;

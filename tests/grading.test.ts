@@ -77,7 +77,8 @@ describe("typo tolerance does not merge opposite words", () => {
   it("keeps prefix opposites apart while still forgiving real typos", async () => {
     const { tokenMatches } = await import("../shared/text");
     for (const [a, b] of [["monocular", "binocular"], ["hypotonia", "hypertonia"], ["ipsilateral", "contralateral"], ["paraparesis", "hemiparesis"]]) expect(tokenMatches(a, b), `${a} vs ${b}`).toBe(false);
-    for (const [a, b] of [["dipolpia", "diplopia"], ["menigitis", "meningitis"], ["myasthneia", "myasthenia"]]) expect(tokenMatches(a, b), `${a} vs ${b}`).toBe(true);
+    for (const [a, b] of [["dipolpia", "diplopia"], ["menigitis", "meningitis"], ["myasthneia", "myasthenia"], ["nueropathy", "neuropathy"]]) expect(tokenMatches(a, b), `${a} vs ${b}`).toBe(true);
+    for (const [a, b] of [["neuropathy", "neuronopathy"], ["myopathy", "myelopathy"], ["dysphagia", "dysphasia"]]) expect(tokenMatches(a, b), `${a} vs ${b}`).toBe(false);
   });
 });
 

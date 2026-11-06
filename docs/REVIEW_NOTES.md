@@ -107,3 +107,8 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## c-vertigo-vision
 - From GRACE-3 and the CRAO statement, read in abstracts and summaries: finger-rub hearing check, gait severity, steroids for vestibular neuritis, observational evidence for thrombolysis within 4.5 hours in CRAO.
 - Meniere disease, vestibular migraine, and nonarteritic ischemic optic neuropathy features are general teaching. m-vv-bppv-actions labels routine vestibular suppressants "harmful", stronger than the guideline's "recommend against".
+
+## c-paraneoplastic
+- m-pns-definite grades limbic encephalitis with small cell lung cancer and no antibody as "probable"; the label rests on the author's knowledge of PNS-Care scoring (no point values taught). Intermediate-risk phenotype examples hedged but not confirmed against graus2021-pns.
+- EFNS screening intervals (repeat at 3 to 6 months, then every 6 months up to 4 years; 2 years for LEMS) predate the 2021 criteria.
+- Integration fix: the grader no longer treats neuropathy and neuronopathy (or myopathy and myelopathy, dysphagia and dysphasia) as typos of each other.
