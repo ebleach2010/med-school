@@ -94,3 +94,16 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - A cogwheel catch alone not meeting the MDS definition of rigidity; MDS supportive features, red flags, and exclusions paraphrased without time windows.
 - Tic and myoclonus definitions, non-Huntington causes of chorea, the serotonin syndrome comparison, and Wilson disease screening in young patients rest only on the curriculum source. Alcohol response in essential tremor; NMS risk factors and the mention of dantrolene or bromocriptine (no doses).
 - bates2015-hd DOI recorded as 10.1038/nrdp.2015.5; one PDF footer showed nrdp.2015.52. Confirm by opening the link.
+
+## c-dementia
+- Anticoagulation advice in the anti-amyloid item follows the 2023 lecanemab appropriate use recommendations; donanemab not covered.
+- m-dem-workup marks B12, TSH, MRI, and depression and sleep screening as necessary. Antipsychotic escalation wording "senior or specialist input". bvFTD onset often before 65 has no specific citation. Vascular cognitive impairment rests on the curriculum source.
+
+## c-toxic-nutritional
+- Sodium correction limits (10 mmol/L in the first 24 hours, then 8 per 24 hours) attributed to spasovski2014-hyponatraemia, confirmed only from secondary summaries.
+- "Give glucose now, thiamine with or right after" anchored to galvin2010-wernicke; Sechi wording not checked. Hypoglycemia, hepatic encephalopathy, uremia, lithium, and carbon monoxide cite the curriculum only. kumar2006-copper DOI from a citing reference.
+- Integration fix: a bare "Wernicke" now earns 0.7 while "Wernicke aphasia" stays wrong.
+
+## c-vertigo-vision
+- From GRACE-3 and the CRAO statement, read in abstracts and summaries: finger-rub hearing check, gait severity, steroids for vestibular neuritis, observational evidence for thrombolysis within 4.5 hours in CRAO.
+- Meniere disease, vestibular migraine, and nonarteritic ischemic optic neuropathy features are general teaching. m-vv-bppv-actions labels routine vestibular suppressants "harmful", stronger than the guideline's "recommend against".
