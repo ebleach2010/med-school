@@ -160,3 +160,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## a-multiple-dx
 - m-mdx-one-or-two: diabetic lumbosacral radiculoplexus neuropathy is a real alternative; the vignette points to L5. Check the plexopathy distractor feedback.
 - m-mdx-epilepsy-confusion: sodium 119 and "limited rate of correction" wording. Chronic subdural hematoma and degenerative cervical myelopathy claims rest on general teaching. m-mdx-document anticoagulation and levodopa plan wording. aberegg2024-hickam cited without volume or pages (online ahead of print).
+
+## a-incidental
+- CK rise after intramuscular injections, the folate-alone warning (cited to stabler2013-b12, full text not checked), and cough-provoked headache in Chiari malformation are mainstream teaching.
+- Serum versus CSF NMDAR reliability wording. Wicket spikes named as often overread from a related Benbadis abstract, not the 2003 paper itself. m-incid-usual counts a 2 mm aneurysm as usually incidental (rationale says it still needs referral). benbadis2003-eeg-overread PMID from QxMD only.
