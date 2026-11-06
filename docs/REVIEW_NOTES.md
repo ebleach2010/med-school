@@ -148,3 +148,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - Antipsychotic caution in catatonia and the NMS and malignant catatonia overlap: rogers2023-catatonia wording not confirmed. Red flag list from pollak2020-autoimmune-psychosis checked against summaries only.
 - Age thresholds ("after about 40 to 50") are teaching convention, not sourced. Antipsychotic intolerance in NMDA receptor encephalitis. Medication and substance causes rest on general sources.
 - m-neuropsych-nmdar is close to placement item p-immuno-nmdar-1 (differs by setting and asks for the next step).
+
+## a-atypical-overlap
+- Attributed to existing sources but checked only in summaries: thrombolysis potentially harmful with aortic arch dissection, and low bleeding risk in mimics (powers2019-ais); some MS therapies worsen NMOSD (wingerchuk2015-nmosd, banwell2023-mogad).
+- Todd paresis resolving within hours to a day or two is unsourced teaching. The dissection vignette (weak right radial pulse with right hemisphere stroke) is consistent with brachiocephalic involvement. Order-priority sequence is strictly linear; vignettes separating anchoring, framing, and diagnosis momentum overlap by nature.
