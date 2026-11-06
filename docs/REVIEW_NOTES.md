@@ -164,3 +164,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## a-incidental
 - CK rise after intramuscular injections, the folate-alone warning (cited to stabler2013-b12, full text not checked), and cough-provoked headache in Chiari malformation are mainstream teaching.
 - Serum versus CSF NMDAR reliability wording. Wicket spikes named as often overread from a related Benbadis abstract, not the 2003 paper itself. m-incid-usual counts a 2 mm aneurysm as usually incidental (rationale says it still needs referral). benbadis2003-eeg-overread PMID from QxMD only.
+
+## a-revise-escalate
+- "Consider CIDP after 8 weeks" from a summary of vandoorn2023-gbs; the "three fluctuations" rule deliberately omitted. GBS ICU criteria and late oxygen desaturation stated without numbers.
+- m-revesc-pupil subdural case cites the GCS and curriculum sources only and omits anticoagulation reversal. m-revesc-empiric names a new seizure as a reason for CT before LP (vandebeek2016-escmid). Pontine localization of facial plus sixth nerve palsy is mainstream anatomy without a specific citation. haig2006-sbar has no PMID.

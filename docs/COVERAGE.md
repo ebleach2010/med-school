@@ -8,21 +8,21 @@ Review status below is the status recorded in the content files. Approvals made 
 
 | Content | Count | Reviewed | AI draft, awaiting review | Synthetic |
 |---|---|---|---|---|
-| Modules with content | 45 | 0 | 45 | 0 |
-| Lessons | 99 | 0 | 99 | 0 |
-| Assessment items | 473 | 0 | 473 | 0 |
+| Modules with content | 49 | 0 | 49 | 0 |
+| Lessons | 107 | 0 | 107 | 0 |
+| Assessment items | 515 | 0 | 515 | 0 |
 | Patient cases | 26 | 0 | 26 | 26 |
 | Investigations | 66 | 0 | 66 | 0 |
 | Antibody entries | 39 | 0 | 39 | 0 |
-| Glossary terms | 613 | | | |
-| Verified sources | 187 | | | |
+| Glossary terms | 642 | | | |
+| Verified sources | 200 | | | |
 
 ## Coverage matrix by domain
 
 | Domain | Complete | Partial | Planned | Lessons | Items | Full cases | Speed cases |
 |---|---|---|---|---|---|---|---|
 | Foundations | 8 | 0 | 0 | 17 | 94 | 1 | 3 |
-| Clinical examination | 5 | 0 | 1 | 12 | 50 | 0 | 0 |
+| Clinical examination | 6 | 0 | 0 | 14 | 61 | 0 | 0 |
 | Stroke and neurovascular | 4 | 0 | 0 | 8 | 38 | 1 | 2 |
 | Epilepsy, mimics, and status epilepticus | 2 | 0 | 0 | 4 | 18 | 2 | 0 |
 | Headache and facial pain | 1 | 0 | 0 | 3 | 11 | 0 | 2 |
@@ -43,7 +43,7 @@ Review status below is the status recorded in the content files. Approvals made 
 | Functional neurological disorder | 1 | 0 | 0 | 2 | 12 | 0 | 1 |
 | Pediatric, genetic, and developmental neurology | 1 | 0 | 0 | 3 | 13 | 0 | 0 |
 | Neuropsychiatric presentations and medical mimics | 1 | 0 | 0 | 2 | 8 | 0 | 0 |
-| Advanced reasoning | 2 | 0 | 3 | 3 | 21 | 1 | 0 |
+| Advanced reasoning | 5 | 0 | 0 | 9 | 52 | 1 | 0 |
 
 ## Modules
 
@@ -59,7 +59,7 @@ Review status below is the status recorded in the content files. Approvals made 
 | Autonomic pathways | complete | 2 | 7 | 0 |
 | Mental status, cognition, and language | complete | 3 | 12 | 0 |
 | Cranial nerve examination | complete | 2 | 10 | 0 |
-| Strength, tone, reflexes, and sensory testing | planned | 0 | 0 | 0 |
+| Strength, tone, reflexes, and sensory testing | complete | 2 | 11 | 0 |
 | Coordination, gait, and balance | complete | 2 | 12 | 0 |
 | Consciousness and coma | complete | 3 | 9 | 0 |
 | Findings versus reported symptoms | complete | 2 | 7 | 0 |
@@ -95,23 +95,23 @@ Review status below is the status recorded in the content files. Approvals made 
 | Neuropsychiatric presentations and medical mimics | complete | 2 | 8 | 0 |
 | Probabilistic reasoning and test interpretation | complete | 1 | 11 | 1 |
 | Atypical and overlapping presentations | complete | 2 | 10 | 0 |
-| Multiple simultaneous diagnoses | planned | 0 | 0 | 0 |
-| Incidental findings and discordant results | planned | 0 | 0 | 0 |
-| Revising a diagnosis and deciding to escalate | planned | 0 | 0 | 0 |
+| Multiple simultaneous diagnoses | complete | 2 | 10 | 0 |
+| Incidental findings and discordant results | complete | 2 | 11 | 0 |
+| Revising a diagnosis and deciding to escalate | complete | 2 | 10 | 0 |
 
 ## Assessment items by ability
 
 | Ability | Items | Distinct presentations |
 |---|---|---|
 | Medical terminology | 28 | 28 |
-| Neuroanatomy and localization | 71 | 71 |
+| Neuroanatomy and localization | 74 | 74 |
 | Mechanisms and pathophysiology | 40 | 40 |
-| History and examination | 64 | 64 |
-| Differential diagnosis | 89 | 89 |
-| Choosing investigations | 56 | 55 |
-| Interpreting results | 45 | 44 |
-| Emergency recognition and management | 50 | 50 |
-| Uncertainty and limits of evidence | 30 | 30 |
+| History and examination | 73 | 73 |
+| Differential diagnosis | 96 | 96 |
+| Choosing investigations | 58 | 57 |
+| Interpreting results | 55 | 54 |
+| Emergency recognition and management | 55 | 55 |
+| Uncertainty and limits of evidence | 36 | 36 |
 
 ## Encounter modes
 

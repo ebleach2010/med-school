@@ -13,7 +13,7 @@ Status as of 2026-10-25. "Done" means implemented and covered by an automated te
 | 5 | Working patient encounter | Done | History (free text and topic chips), exam maneuvers, orders with realistic turnaround, actions, ranked differential, submission, interpretation step, debrief, AI tutor after submission. |
 | 6 | Two-question speed mode | Done | Counter, request cost shown before use, bundles count once, skip reveals explanation, limit enforced server-side. |
 | 7 | Persistent stars and spaced review | Done | Three evidence-based stars, permanent once earned; retention shown separately; Leitner scheduling with "why is this due"; controlled clock. |
-| 8 | Source-linked reference entries | Done | 39 antibody entries with coverage date and 26 listed gaps; 66 investigations; 59 verified sources. |
+| 8 | Source-linked reference entries | Done | 39 antibody entries with coverage date and 26 listed gaps; 66 investigations; 200 verified sources. |
 | 9 | API settings and no-key demo mode | Done | Provider adapter (Anthropic SDK, OpenAI-compatible), server-side keys, masked display, connection test, model selection, streaming, cancel, timeouts, retries, usage and cost, per-session and daily limits, rate limiting. |
 
 ## Acceptance criteria
@@ -48,9 +48,9 @@ Planned modules are being written one file per module in `content/modules/` (gui
 | 3 | c-ich-sah, c-tia-secondary, c-cvt-dissection, c-headache, c-spinal-emergencies, c-ms, c-nmosd-mogad | Done |
 | 4 | c-encephalitis-viral, c-epilepsy-mimics, c-polyneuropathy-radiculopathy, c-myopathy-mnd, c-parkinsonism, c-dementia, c-vertigo-vision | Done |
 | 5 | c-toxic-nutritional, c-paraneoplastic, c-rpd, c-autonomic, c-sleep, c-neuro-oncology, c-neurocritical, c-fnd, c-pediatric, c-neuropsychiatry, a-atypical-overlap | Done |
-| 6 | x-motor-sensory-exam, a-multiple-dx, a-incidental, a-revise-escalate | In progress (restarted after a container restart) |
+| 6 | x-motor-sensory-exam, a-multiple-dx, a-incidental, a-revise-escalate | Done |
 
-Totals so far: 45 complete modules, 4 planned, 99 lessons, 473 items, 613 glossary terms, 187 verified sources. All new content is an AI draft awaiting clinician review; `docs/REVIEW_NOTES.md` lists what each author flagged, and `docs/proposed-sources.md` lists sources that could not be verified and are not cited.
+Totals: all 49 modules complete, 107 lessons, 515 items, 642 glossary terms, 200 verified sources. All new content is an AI draft awaiting clinician review; `docs/REVIEW_NOTES.md` lists what each author flagged, and `docs/proposed-sources.md` lists sources that could not be verified and are not cited.
 
 ## Generated practice (added 2026-11-05)
 
@@ -76,7 +76,7 @@ Totals so far: 45 complete modules, 4 planned, 99 lessons, 473 items, 613 glossa
 
 ## Next steps (suggested order)
 
-1. Clinician review pass on the 10 complete modules, starting with emergency content (stroke, meningitis, status epilepticus, cord compression).
+1. Clinician review pass on all 49 modules, starting with emergency content (stroke, hemorrhage, meningitis, encephalitis, status epilepticus, cord compression, raised intracranial pressure) and the points in `docs/REVIEW_NOTES.md`.
 2. Run the live AI paths with a real key and record the results.
 3. Fill the encounter vocabulary gaps above.
 4. Write lessons for the examination modules.

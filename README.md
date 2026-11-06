@@ -38,8 +38,8 @@ Requires Node 22.13 or later (it uses the built-in `node:sqlite`).
 ## What is built
 
 - **Placement:** an adaptive check of nine abilities. It starts with a 9-question screen, then asks more only where your level is unclear. It never treats one correct answer as mastery and needs a different presentation before it calls something demonstrated. It also tracks confidence, "I don't know," and self-reported slips.
-- **Curriculum map:** 49 modules across 23 domains. 10 are complete, 1 is partial, and 38 are planned and shown as planned. Placement results decide what you can skip and what needs remediation.
-- **Lessons:** 12 lessons, each with a hook, an explanation with four optional deeper layers, an animation or model where useful, a prediction, an application case, and scheduled retrieval. Every glossary term is tappable (125 terms).
+- **Curriculum map:** 49 modules across 23 domains, all with lessons. Placement results decide what you can skip and what needs remediation.
+- **Lessons:** 107 lessons and 515 questions, each lesson with a hook, an explanation with four optional deeper layers, an animation or model where useful, a prediction, an application case, and scheduled retrieval. Every glossary term is tappable (642 terms). Thirty-nine modules were written on 2026-11-06, one file per module in `content/modules/`; `docs/REVIEW_NOTES.md` lists what each needs a clinician to check.
 - **Animations:** six schematic models, each with play, pause, speed, captions, and a step mode for reduced motion.
 - **Encounters:** full workup, emergency (the clock runs and delays have consequences), diagnostic uncertainty, and a longitudinal clinic. Hidden case state stays on the server.
 - **Speed rounds:** two requests, then you name the diagnosis.
@@ -48,7 +48,7 @@ Requires Node 22.13 or later (it uses the built-in `node:sqlite`).
 - **Reference:**
   - 39 antibody entries, with a coverage date and a list of known gaps
   - 66 investigations, each covering indications, timing, limitations, and how to read the result
-  - 59 verified sources
+  - 200 verified sources
   - a coverage matrix
 - **Review workspace:** approve or flag content by version, preview hidden cases, review update proposals, and draft new content with AI. Drafts are validated and nothing publishes without approval.
 
