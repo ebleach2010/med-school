@@ -89,3 +89,8 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - Breaking bad news (m-myomnd-news) is standard teaching cited only to feldman2022-als and the curriculum.
 - Multifocal motor neuropathy statements (IVIG response, steroids may worsen, anti-GM1) and the ALS mimic list rely on feldman2022-als, not confirmed against its text. Dystrophinopathy and rhabdomyolysis content has no specific source. Gold Coast criteria checked against summaries only.
 - Several PMIDs came from secondary listings (reference lists, catalogs, PubMed mirrors); each verification note says where.
+
+## c-parkinsonism
+- A cogwheel catch alone not meeting the MDS definition of rigidity; MDS supportive features, red flags, and exclusions paraphrased without time windows.
+- Tic and myoclonus definitions, non-Huntington causes of chorea, the serotonin syndrome comparison, and Wilson disease screening in young patients rest only on the curriculum source. Alcohol response in essential tremor; NMS risk factors and the mention of dantrolene or bromocriptine (no doses).
+- bates2015-hd DOI recorded as 10.1038/nrdp.2015.5; one PDF footer showed nrdp.2015.52. Confirm by opening the link.
