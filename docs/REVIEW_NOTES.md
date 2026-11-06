@@ -125,3 +125,8 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - MSLT at a principles level without cutoffs. m-sleep-narco-tests marks a stimulant started before testing as "harmful".
 - Sleep-related hypermotor epilepsy named from the ILAE hyperkinetic-onset category; no dedicated consensus paper cited. Most older adults with idiopathic RBD said to later develop a synucleinopathy, without rates.
 - winkelman2025-aasm-rls iron and augmentation recommendations and aasm2023-icsd3tr claims confirmed only from secondary summaries.
+
+## c-neurocritical
+- Only numbers: trauma ICP threshold 22 mm Hg and CPP 60 to 70 mm Hg from carney2017-btf-tbi, checked against summaries and labeled trauma-specific. No temperature, CO2, or blood pressure thresholds for brain death testing.
+- From summaries of greer2023-bd-dnc, not full text: EEG not accepted as an ancillary test; ancillary tests only when the clinical evaluation cannot be completed; spinal reflexes can persist; donation request separate from telling the family.
+- Head of bed elevation, loosening neck collars, treating fever and seizures cite general teaching. m-neurocrit-herniation-order sequence (first-line measures before repeat CT and neurosurgical review, which run together).
