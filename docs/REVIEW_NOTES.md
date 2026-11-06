@@ -65,3 +65,12 @@ Each module below is an AI draft. These are the points the author flagged as nee
 - The 2024 McDonald changes are described only in general terms; compare with montalban2025-mcdonald itself (not opened here).
 - "Some MS treatments can worsen NMOSD" attributed to wingerchuk2015-nmosd; anti-CD20 benefit in primary progressive MS; plasma exchange for steroid-refractory relapse; mimic list in m-ms-course.
 - Integration fix: "dissemination in space and oligoclonal bands" now earns 0.6 (bands can substitute for evidence of dissemination in time since 2017) instead of being marked a misconception.
+
+## c-epilepsy-mimics
+- Sleep deprivation taught as a trigger to ask about, not as making a seizure provoked (consistent with ILAE usage). daum2014-positive-signs cited only for the principle of positive signs.
+- ECG and pregnancy test graded "reasonable" rather than "necessary" in m-epimim-first-tests. 21 to 45 percent two-year recurrence from krumholz2015-first-seizure. Limb-shaking TIA and frontal lobe seizures mentioned briefly.
+
+## c-spinal-emergencies
+- Steroid caution when lymphoma is possible: standard teaching, not confirmed in nice2023-ng234. No dexamethasone dose or blood pressure targets.
+- From darouiche2006-sea: avoid LP, empiric gram-negative cover, full triad in a minority. Antibiotics placed alongside MRI in a febrile patient with a deficit.
+- From lavy2009-ces: CES-I and CES-R and the quoted 43 percent false positive rate. Incomplete cord syndromes cite the curriculum only. ISNCSCI has been revised since 2011.
