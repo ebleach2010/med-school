@@ -152,3 +152,7 @@ Each module below is an AI draft. These are the points the author flagged as nee
 ## a-atypical-overlap
 - Attributed to existing sources but checked only in summaries: thrombolysis potentially harmful with aortic arch dissection, and low bleeding risk in mimics (powers2019-ais); some MS therapies worsen NMOSD (wingerchuk2015-nmosd, banwell2023-mogad).
 - Todd paresis resolving within hours to a day or two is unsourced teaching. The dissection vignette (weak right radial pulse with right hemisphere stroke) is consistent with brachiocephalic involvement. Order-priority sequence is strictly linear; vignettes separating anchoring, framing, and diagnosis momentum overlap by nature.
+
+## x-motor-sensory-exam
+- Chaddock maneuver, inverted supinator sign, and non-corticospinal causes of an extensor plantar (sleep, postictal, coma, hypoglycemia) rest on the curriculum source. Root assignments given as ranges; ISNCSCI key muscles noted in the lesson.
+- NINDS reflex grade wording against litvan1996-ninds-reflex-scale. Whether the cervical myelopathy picture in m-msx-cord-loc suits clerkship level. "L5-S1" earns 0.75 on m-msx-s1 because it contains S1.
